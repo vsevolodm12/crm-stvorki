@@ -124,23 +124,23 @@ export const ClientDetail = () => {
   const isTaskCompleted = (taskId: number) => completedTasks.includes(taskId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Заголовок */}
-      <div className="flex items-start gap-4">
-        <Link to="/clients" className="flex items-center">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+        <Link to="/clients" className="flex items-center self-start">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Назад
           </Button>
         </Link>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Phone className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">{client.phone}</span>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{client.name}</h1>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm sm:text-base text-gray-600 break-all">{client.phone}</span>
             <button
               onClick={handleCopyPhone}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
               title="Скопировать номер"
             >
               {phoneCopied ? (
@@ -151,29 +151,32 @@ export const ClientDetail = () => {
             </button>
           </div>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <Button onClick={() => setIsCreateModalOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
-          Новый клиент
+          <span className="hidden sm:inline">Новый клиент</span>
+          <span className="sm:hidden">Новый</span>
         </Button>
       </div>
 
       {/* Тумблер и ссылки на переписки */}
       <Card>
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3">
               {isBotMode ? (
                 <>
-                  <Bot className="w-5 h-5 text-primary-600" />
-                  <span className="text-sm font-medium text-gray-900">
-                    Бот ведет переписку
+                  <Bot className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-900">
+                    <span className="hidden sm:inline">Бот ведет переписку</span>
+                    <span className="sm:hidden">Бот</span>
                   </span>
                 </>
               ) : (
                 <>
-                  <User className="w-5 h-5 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-900">
-                    Оператор ведет переписку
+                  <User className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-900">
+                    <span className="hidden sm:inline">Оператор ведет переписку</span>
+                    <span className="sm:hidden">Оператор</span>
                   </span>
                 </>
               )}
@@ -184,41 +187,41 @@ export const ClientDetail = () => {
               label={isBotMode ? 'Бот' : 'Оператор'}
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <a
               href={client.conversationLinks.avito}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700"
+              className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm text-gray-700 flex-1 sm:flex-initial justify-center"
             >
-              <span className="w-5 h-5 rounded bg-orange-100 flex items-center justify-center">
+              <span className="w-5 h-5 rounded bg-orange-100 flex items-center justify-center flex-shrink-0">
                 <span className="text-orange-600 font-bold text-xs">А</span>
               </span>
-              Авито
+              <span className="hidden sm:inline">Авито</span>
               <ExternalLink className="w-3 h-3 text-gray-400" />
             </a>
             <a
               href={client.conversationLinks.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700"
+              className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm text-gray-700 flex-1 sm:flex-initial justify-center"
             >
-              <span className="w-5 h-5 rounded bg-green-100 flex items-center justify-center">
+              <span className="w-5 h-5 rounded bg-green-100 flex items-center justify-center flex-shrink-0">
                 <span className="text-green-600 font-bold text-xs">W</span>
               </span>
-              WhatsApp
+              <span className="hidden sm:inline">WhatsApp</span>
               <ExternalLink className="w-3 h-3 text-gray-400" />
             </a>
             <a
               href={client.conversationLinks.max}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700"
+              className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm text-gray-700 flex-1 sm:flex-initial justify-center"
             >
-              <span className="w-5 h-5 rounded bg-blue-100 flex items-center justify-center">
+              <span className="w-5 h-5 rounded bg-blue-100 flex items-center justify-center flex-shrink-0">
                 <span className="text-blue-600 font-bold text-xs">М</span>
               </span>
-              МАХ
+              <span className="hidden sm:inline">МАХ</span>
               <ExternalLink className="w-3 h-3 text-gray-400" />
             </a>
           </div>
@@ -226,38 +229,42 @@ export const ClientDetail = () => {
       </Card>
 
       {/* Контекст переписки / Задачи */}
-      <Card className="flex flex-col h-[600px]">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+      <Card className="flex flex-col h-[500px] sm:h-[600px]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1">
             <button
               onClick={() => setActiveTab('context')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base flex-1 sm:flex-initial ${
                 activeTab === 'context'
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Контекст переписки
+              <span className="hidden sm:inline">Контекст переписки</span>
+              <span className="sm:hidden">Контекст</span>
             </button>
             <button
               onClick={() => setActiveTab('tasks')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm sm:text-base flex-1 sm:flex-initial justify-center ${
                 activeTab === 'tasks'
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <CheckSquare2 className="w-4 h-4" />
-              Задачи
+              <span>Задачи</span>
             </button>
           </div>
-          {activeTab === 'context' && <Badge variant="info">Автоматически</Badge>}
-          {activeTab === 'tasks' && (
-            <Button size="sm" onClick={() => setIsTaskModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Создать задачу
-            </Button>
-          )}
+          <div className="flex items-center justify-end">
+            {activeTab === 'context' && <Badge variant="info" className="text-xs">Автоматически</Badge>}
+            {activeTab === 'tasks' && (
+              <Button size="sm" onClick={() => setIsTaskModalOpen(true)} className="w-full sm:w-auto">
+                <Plus className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Создать задачу</span>
+                <span className="sm:hidden">Создать</span>
+              </Button>
+            )}
+          </div>
         </div>
 
         {activeTab === 'context' ? (

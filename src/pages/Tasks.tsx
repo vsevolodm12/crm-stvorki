@@ -95,11 +95,12 @@ export const Tasks = () => {
 
       {/* Фильтры */}
       <Card>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant={filter === 'all' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => setFilter('all')}
+            className="flex-1 sm:flex-initial"
           >
             Все
           </Button>
@@ -107,7 +108,7 @@ export const Tasks = () => {
             variant={filter === 'bot' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => setFilter('bot')}
-            className="flex items-center"
+            className="flex items-center flex-1 sm:flex-initial"
           >
             <Bot className="w-4 h-4 mr-1.5" />
             Бот
@@ -116,7 +117,7 @@ export const Tasks = () => {
             variant={filter === 'manual' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => setFilter('manual')}
-            className="flex items-center"
+            className="flex items-center flex-1 sm:flex-initial"
           >
             <User className="w-4 h-4 mr-1.5" />
             Ручная
@@ -133,9 +134,9 @@ export const Tasks = () => {
               key={task.id}
               className={completed ? 'opacity-70' : ''}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
                     <button
                       onClick={() => handleCompleteTask(task.id)}
                       className="flex-shrink-0"
@@ -147,44 +148,44 @@ export const Tasks = () => {
                         <div className="w-5 h-5 border-2 border-gray-300 rounded-full hover:border-primary-500 transition-colors cursor-pointer"></div>
                       )}
                     </button>
-                    <h3 className={`font-semibold ${completed ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+                    <h3 className={`font-semibold text-sm sm:text-base ${completed ? 'line-through text-gray-400' : 'text-gray-900'} break-words`}>
                       {task.title}
                     </h3>
                     {task.type === 'bot' ? (
-                      <Badge variant="info" className="flex items-center gap-1">
+                      <Badge variant="info" className="flex items-center gap-1 flex-shrink-0">
                         <Bot className="w-3 h-3" />
-                        Бот
+                        <span className="hidden sm:inline">Бот</span>
                       </Badge>
                     ) : (
-                      <Badge variant="default" className="flex items-center gap-1">
+                      <Badge variant="default" className="flex items-center gap-1 flex-shrink-0">
                         <User className="w-3 h-3" />
-                        Ручная
+                        <span className="hidden sm:inline">Ручная</span>
                       </Badge>
                     )}
                   </div>
-                  <p className={`text-sm mb-2 ${completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                  <p className={`text-xs sm:text-sm mb-2 ${completed ? 'line-through text-gray-400' : 'text-gray-600'} break-words`}>
                     {task.description}
                   </p>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="text-primary-600 hover:underline cursor-pointer">
-                    {task.appeal}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{task.dueDate}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                    <span className="text-primary-600 hover:underline cursor-pointer break-words">
+                      {task.appeal}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{task.dueDate}</span>
+                    </div>
                   </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto sm:ml-4"
+                  onClick={() => handleCompleteTask(task.id)}
+                >
+                  {completed ? 'Отменить' : 'Выполнить'}
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-4"
-                onClick={() => handleCompleteTask(task.id)}
-              >
-                {completed ? 'Отменить' : 'Выполнить'}
-              </Button>
-            </div>
-          </Card>
+            </Card>
           );
         })}
       </div>

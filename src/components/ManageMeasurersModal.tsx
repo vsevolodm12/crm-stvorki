@@ -58,10 +58,10 @@ export const ManageMeasurersModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Управление замерщиками</h2>
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Управление замерщиками</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -70,7 +70,7 @@ export const ManageMeasurersModal = ({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {measurers.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
               Нет замерщиков

@@ -52,13 +52,13 @@ export const Clients = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Клиенты</h1>
-          <p className="text-gray-600 mt-1">База клиентов</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Клиенты</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">База клиентов</p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <Button onClick={() => setIsCreateModalOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Новый клиент
         </Button>
@@ -127,20 +127,20 @@ export const Clients = () => {
           .map((client) => (
           <Link key={client.id} to={`/clients/${client.id}`}>
             <Card className="hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-primary-700 font-semibold">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary-700 font-semibold text-sm">
                       {client.name.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                       {client.name}
                     </h3>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <Phone className="w-3 h-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">{client.phone}</span>
+                      <Phone className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-gray-600 truncate">{client.phone}</span>
                     </div>
                     {client.tags && client.tags.length > 0 && (
                       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -151,8 +151,8 @@ export const Clients = () => {
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs text-gray-500 block">
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs text-gray-500 block whitespace-nowrap">
                     {client.lastContact}
                   </span>
                 </div>

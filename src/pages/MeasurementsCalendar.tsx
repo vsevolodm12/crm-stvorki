@@ -276,35 +276,35 @@ export const MeasurementsCalendar = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Календарь замеров</h1>
-          <p className="text-gray-600 mt-1">Управление замерами</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Календарь замеров</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Управление замерами</p>
         </div>
         <Button onClick={() => {
           setSelectedDate('');
           setIsCreateModalOpen(true);
-        }}>
+        }} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Добавить замер
         </Button>
       </div>
 
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Календарь */}
         <div className="lg:col-span-2">
           <Card>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 justify-center sm:justify-start">
                 <button
                   onClick={prevMonth}
                   className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5 text-gray-600" />
                 </button>
-                <h2 className="font-semibold text-gray-900 min-w-[160px] text-center">
+                <h2 className="font-semibold text-gray-900 min-w-[140px] sm:min-w-[160px] text-center text-sm sm:text-base">
                   {months[currentMonth]} {currentYear} г.
                 </h2>
                 <button
@@ -314,7 +314,7 @@ export const MeasurementsCalendar = () => {
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 justify-center sm:justify-end">
                 <MeasurerDropdown
                   measurers={measurers}
                   selectedMeasurer={selectedMeasurer}

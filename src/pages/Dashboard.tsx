@@ -90,14 +90,14 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Главная</h1>
-        <p className="text-gray-600 mt-1">Обзор вашей CRM системы</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Главная</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Обзор вашей CRM системы</p>
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -121,7 +121,7 @@ export const Dashboard = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Последние обращения */}
         <Card>
           <div className="flex items-center justify-between mb-6">

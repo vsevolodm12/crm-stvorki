@@ -9,13 +9,29 @@ export const Layout = ({ children }: LayoutProps) => {
   // Загружаем состояние из localStorage при инициализации
   const [isMenuOpen, setIsMenuOpen] = useState(() => {
     const saved = localStorage.getItem('menuOpen');
-    return saved ? JSON.parse(saved) : true; // По умолчанию открыто
+    return saved ? JSON.parse(saved) : false; // По умолчанию закрыто на мобильных
   });
   
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(() => {
     const saved = localStorage.getItem('menuCollapsed');
     return saved ? JSON.parse(saved) : false;
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Определяем мобильное устройство
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setIsMenuOpen(false); // Закрываем меню на мобильных
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Сохраняем состояние в localStorage при изменении
   useEffect(() => {
@@ -27,7 +43,7 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [isMenuCollapsed]);
 
   const getMenuWidth = () => {
-    if (!isMenuOpen) return 0;
+    if (isMobile || !isMenuOpen) return 0;
     return isMenuCollapsed ? 72 : 256;
   };
 
@@ -40,8 +56,11 @@ export const Layout = ({ children }: LayoutProps) => {
         onToggle={() => setIsMenuOpen(!isMenuOpen)}
         onCollapse={() => setIsMenuCollapsed(!isMenuCollapsed)}
       />
-      <main className={`transition-all duration-300`} style={{ marginLeft: `${getMenuWidth()}px` }}>
-        <div className="p-4 md:p-6 lg:p-8">{children}</div>
+      <main 
+        className="transition-all duration-300" 
+        style={{ marginLeft: `${getMenuWidth()}px` }}
+      >
+        <div className="p-3 sm:p-4 md:p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );

@@ -71,14 +71,14 @@ export const Statistics = () => {
   const maxPhones = Math.max(...phonesData.map(d => d.value));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Статистика</h1>
-        <p className="text-gray-600 mt-1">Аналитика и метрики работы</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Статистика</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Аналитика и метрики</p>
       </div>
 
       {/* Основные метрики */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {mainStats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -112,7 +112,7 @@ export const Statistics = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* График выручки */}
         <Card>
           <div className="flex items-center justify-between mb-6">
@@ -166,7 +166,7 @@ export const Statistics = () => {
       </div>
 
       {/* Дополнительная статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <Card>
           <div className="flex items-center justify-between">
             <div>
