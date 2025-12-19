@@ -4,8 +4,9 @@ import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
 import { Clients } from './pages/Clients';
 import { ClientDetail } from './pages/ClientDetail';
+import { Statistics } from './pages/Statistics';
+import { MeasurementsCalendar } from './pages/MeasurementsCalendar';
 import { BotSettings } from './pages/BotSettings';
-import { Settings } from './pages/Settings';
 
 function App() {
   return (
@@ -16,8 +17,9 @@ function App() {
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/measurements" element={<MeasurementsCalendar />} />
           <Route path="/bot" element={<BotSettings />} />
-          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </Router>

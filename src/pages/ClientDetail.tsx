@@ -189,7 +189,7 @@ export const ClientDetail = () => {
           </div>
           <Badge variant="info">Автоматически</Badge>
         </div>
-        <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
+        <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {/* Контекст как сообщения - каждое обращение отдельно */}
           {contextMessages.map((msg) => (
             <div key={msg.id} className="flex justify-start">

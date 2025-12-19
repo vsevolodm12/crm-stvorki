@@ -19,7 +19,6 @@ export const Tasks = () => {
       dueDate: '15.04.2025',
       type: 'bot',
       status: 'pending',
-      context: 'Дополнить сообщение: "Также можем предложить услуги по уходу за окнами"',
     },
     {
       id: 2,
@@ -160,14 +159,6 @@ export const Tasks = () => {
                   <p className={`text-sm mb-2 ${completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
                     {task.description}
                   </p>
-                {task.context && (
-                  <div className="p-2 bg-blue-50 rounded-lg mb-2">
-                    <p className="text-xs text-blue-900">
-                      <span className="font-medium">Контекст для бота:</span>{' '}
-                      {task.context}
-                    </p>
-                  </div>
-                )}
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span className="text-primary-600 hover:underline cursor-pointer">
                     {task.appeal}

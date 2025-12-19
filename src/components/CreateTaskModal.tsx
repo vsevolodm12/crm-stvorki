@@ -16,7 +16,6 @@ interface CreateTaskModalProps {
     description: string;
     type: 'bot' | 'manual';
     dueDate: string;
-    context?: string;
   }) => void;
 }
 
@@ -32,7 +31,6 @@ export const CreateTaskModal = ({
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'bot' | 'manual'>('manual');
   const [dueDate, setDueDate] = useState('');
-  const [context, setContext] = useState('');
 
   if (!isOpen) return null;
 
@@ -43,14 +41,12 @@ export const CreateTaskModal = ({
       description,
       type,
       dueDate,
-      context: type === 'bot' ? context : undefined,
     });
     // Сброс формы
     setTitle('');
     setDescription('');
     setType('manual');
     setDueDate('');
-    setContext('');
     onClose();
   };
 
@@ -136,16 +132,6 @@ export const CreateTaskModal = ({
             onChange={setDueDate}
             required
           />
-
-          {type === 'bot' && (
-            <Textarea
-              label="Контекст для бота (необязательно)"
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              placeholder="Дополнительная информация для бота..."
-              className="min-h-[80px]"
-            />
-          )}
 
           <div className="flex gap-3 pt-4 border-t border-gray-200">
             <Button
