@@ -3,7 +3,7 @@ import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { CreateTaskModal } from '../components/CreateTaskModal';
-import { Plus, Calendar, Bot, User, CheckCircle2, CheckSquare2 } from 'lucide-react';
+import { Plus, Calendar, Bot, User, CheckCircle2 } from 'lucide-react';
 
 export const Tasks = () => {
   const [filter, setFilter] = useState<'all' | 'bot' | 'manual'>('all');

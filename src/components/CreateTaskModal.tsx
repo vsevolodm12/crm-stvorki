@@ -31,9 +31,9 @@ interface CreateTaskModalProps {
 export const CreateTaskModal = ({
   isOpen,
   onClose,
-  appealId,
-  appealTitle,
-  clientName,
+  appealId: _appealId,
+  appealTitle: _appealTitle,
+  clientName: _clientName,
   clientId,
   clients = [],
   onSubmit,
