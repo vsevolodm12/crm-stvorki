@@ -6,25 +6,44 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
   // Загружаем состояние из localStorage при инициализации
   const [isMenuOpen, setIsMenuOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('menuOpen');
-    return saved ? JSON.parse(saved) : false; // По умолчанию закрыто на мобильных
+    if (saved !== null) {
+      return JSON.parse(saved);
+    }
+    // По умолчанию открыто на десктопе, закрыто на мобильных
+    return window.innerWidth >= 768;
   });
   
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('menuCollapsed');
     return saved ? JSON.parse(saved) : false;
   });
 
-  const [isMobile, setIsMobile] = useState(false);
-
   // Определяем мобильное устройство
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
-        setIsMenuOpen(false); // Закрываем меню на мобильных
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // На мобильных закрываем меню, на десктопе открываем
+      if (mobile) {
+        setIsMenuOpen(false);
+      } else {
+        // На десктопе проверяем сохраненное состояние или открываем по умолчанию
+        const saved = localStorage.getItem('menuOpen');
+        if (saved === null) {
+          setIsMenuOpen(true);
+        }
       }
     };
     
@@ -43,7 +62,11 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [isMenuCollapsed]);
 
   const getMenuWidth = () => {
-    if (isMobile || !isMenuOpen) return 0;
+    // На мобильных меню скрыто, на десктопе всегда видно
+    if (isMobile) {
+      return isMenuOpen ? (isMenuCollapsed ? 72 : 256) : 0;
+    }
+    // На десктопе меню всегда видно
     return isMenuCollapsed ? 72 : 256;
   };
 

@@ -38,11 +38,11 @@ export const Navigation = ({ isOpen, isCollapsed, onClose, onToggle, onCollapse 
           onClick={onClose}
         />
       )}
-      {/* Кнопка меню когда закрыто */}
+      {/* Кнопка меню когда закрыто (только на мобильных) */}
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed left-4 top-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+          className="fixed left-4 top-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors md:hidden"
         >
           <Menu className="w-5 h-5 text-gray-700" />
         </button>
@@ -50,7 +50,7 @@ export const Navigation = ({ isOpen, isCollapsed, onClose, onToggle, onCollapse 
       
       <nav
         className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 z-50 transform transition-all duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
       >
         <div className="h-full flex flex-col">
