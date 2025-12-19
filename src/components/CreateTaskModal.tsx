@@ -31,13 +31,17 @@ interface CreateTaskModalProps {
 export const CreateTaskModal = ({
   isOpen,
   onClose,
-  appealId: _appealId,
-  appealTitle: _appealTitle,
-  clientName: _clientName,
+  appealId,
+  appealTitle,
+  clientName,
   clientId,
   clients = [],
   onSubmit,
 }: CreateTaskModalProps) => {
+  // Параметры appealId, appealTitle, clientName оставлены для совместимости API
+  void appealId;
+  void appealTitle;
+  void clientName;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'bot' | 'manual'>('manual');
