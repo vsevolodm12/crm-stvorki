@@ -1,9 +1,15 @@
-import { useState } from 'react';
-import { X, Bot, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Bot, User, ChevronDown, Search } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import { Textarea } from './Textarea';
 import { DatePicker } from './DatePicker';
+
+interface Client {
+  id: number;
+  name: string;
+  phone: string;
+}
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -11,11 +17,14 @@ interface CreateTaskModalProps {
   appealId?: number;
   appealTitle?: string;
   clientName?: string;
+  clientId?: number;
+  clients?: Client[];
   onSubmit: (task: {
     title: string;
     description: string;
     type: 'bot' | 'manual';
     dueDate: string;
+    clientId: number;
   }) => void;
 }
 
@@ -25,30 +34,69 @@ export const CreateTaskModal = ({
   appealId,
   appealTitle,
   clientName,
+  clientId,
+  clients = [],
   onSubmit,
 }: CreateTaskModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'bot' | 'manual'>('manual');
   const [dueDate, setDueDate] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState<number | ''>('');
+  const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+  const [clientSearchQuery, setClientSearchQuery] = useState('');
+
+  // Автоматически выбираем клиента при открытии модального окна
+  useEffect(() => {
+    if (isOpen && clientId) {
+      setSelectedClientId(clientId);
+    } else if (isOpen && !clientId) {
+      setSelectedClientId('');
+    }
+  }, [isOpen, clientId]);
+
+  // Сброс формы при закрытии
+  useEffect(() => {
+    if (!isOpen) {
+      setTitle('');
+      setDescription('');
+      setType('manual');
+      setDueDate('');
+      setSelectedClientId(clientId || '');
+      setIsClientDropdownOpen(false);
+      setClientSearchQuery('');
+    }
+  }, [isOpen, clientId]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedClientId) {
+      alert('Пожалуйста, выберите клиента');
+      return;
+    }
     onSubmit({
       title,
       description,
       type,
       dueDate,
+      clientId: selectedClientId as number,
     });
-    // Сброс формы
-    setTitle('');
-    setDescription('');
-    setType('manual');
-    setDueDate('');
     onClose();
   };
+
+  const selectedClient = clients.find(c => c.id === selectedClientId);
+
+  // Фильтрация клиентов по поисковому запросу
+  const filteredClients = clients.filter(client => {
+    if (!clientSearchQuery) return true;
+    const query = clientSearchQuery.toLowerCase();
+    return (
+      client.name.toLowerCase().includes(query) ||
+      client.phone.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -64,18 +112,83 @@ export const CreateTaskModal = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {appealId && (
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Обращение:</span> {appealTitle || `#${appealId}`}
-              </p>
-              {clientName && (
-                <p className="text-sm text-gray-600 mt-1">
-                  <span className="font-medium">Клиент:</span> {clientName}
-                </p>
+          {/* Выбор клиента */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Клиент <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsClientDropdownOpen(!isClientDropdownOpen);
+                  if (!isClientDropdownOpen) {
+                    setClientSearchQuery('');
+                  }
+                }}
+                className={`w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg text-left hover:border-gray-400 transition-colors ${
+                  !selectedClientId ? 'text-gray-400' : 'text-gray-900'
+                }`}
+              >
+                <span>
+                  {selectedClient ? `${selectedClient.name} (${selectedClient.phone})` : 'Выберите клиента'}
+                </span>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isClientDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isClientDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => {
+                      setIsClientDropdownOpen(false);
+                      setClientSearchQuery('');
+                    }}
+                  />
+                  <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden flex flex-col">
+                    {/* Поле поиска */}
+                    <div className="p-2 border-b border-gray-200">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          value={clientSearchQuery}
+                          onChange={(e) => setClientSearchQuery(e.target.value)}
+                          placeholder="Поиск по имени или телефону..."
+                          className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    {/* Список клиентов */}
+                    <div className="overflow-y-auto max-h-60">
+                      {filteredClients.length === 0 ? (
+                        <div className="px-4 py-2 text-sm text-gray-500">
+                          {clientSearchQuery ? 'Клиенты не найдены' : 'Нет доступных клиентов'}
+                        </div>
+                      ) : (
+                        filteredClients.map((client) => (
+                          <button
+                            key={client.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedClientId(client.id);
+                              setIsClientDropdownOpen(false);
+                              setClientSearchQuery('');
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                              selectedClientId === client.id ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {client.name} ({client.phone})
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
-          )}
+          </div>
 
           <Input
             label="Название задачи"

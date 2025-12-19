@@ -3,7 +3,7 @@ import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { CreateTaskModal } from '../components/CreateTaskModal';
-import { Plus, Calendar, Bot, User, CheckCircle2 } from 'lucide-react';
+import { Plus, Calendar, Bot, User, CheckCircle2, CheckSquare2 } from 'lucide-react';
 
 export const Tasks = () => {
   const [filter, setFilter] = useState<'all' | 'bot' | 'manual'>('all');
@@ -136,11 +136,17 @@ export const Tasks = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    {completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    ) : (
-                      <div className="w-5 h-5 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                    )}
+                    <button
+                      onClick={() => handleCompleteTask(task.id)}
+                      className="flex-shrink-0"
+                      title={completed ? 'Отменить выполнение' : 'Выполнить задачу'}
+                    >
+                      {completed ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full hover:border-primary-500 transition-colors cursor-pointer"></div>
+                      )}
+                    </button>
                     <h3 className={`font-semibold ${completed ? 'line-through text-gray-400' : 'text-gray-900'}`}>
                       {task.title}
                     </h3>
@@ -186,6 +192,13 @@ export const Tasks = () => {
       <CreateTaskModal
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
+        clients={[
+          { id: 1, name: 'Иван Петров', phone: '+7 (999) 123-45-67' },
+          { id: 2, name: 'Мария Сидорова', phone: '+7 (999) 234-56-78' },
+          { id: 3, name: 'Алексей Козлов', phone: '+7 (999) 345-67-89' },
+          { id: 4, name: 'Елена Волкова', phone: '+7 (999) 456-78-90' },
+          { id: 5, name: 'Дмитрий Соколов', phone: '+7 (999) 567-89-01' },
+        ]}
         onSubmit={(task) => {
           console.log('Создана задача:', task);
           // Здесь будет логика создания задачи
