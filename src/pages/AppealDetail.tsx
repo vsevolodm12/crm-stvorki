@@ -7,6 +7,15 @@ import { Toggle } from '../components/Toggle';
 import { CreateTaskModal } from '../components/CreateTaskModal';
 import { ArrowLeft, Phone, Bot, User, Plus, Calendar, FileText, ExternalLink, MessageCircle, Edit, Trash2 } from 'lucide-react';
 
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: string;
+  type: 'bot' | 'manual';
+  status: 'pending' | 'completed';
+}
+
 export const AppealDetail = () => {
   const { id } = useParams();
   const [isBotActive, setIsBotActive] = useState(true);
@@ -27,7 +36,7 @@ export const AppealDetail = () => {
     },
   };
 
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
       title: 'Написать клиенту через 3 месяца',
@@ -314,7 +323,17 @@ export const AppealDetail = () => {
         clientName={appeal.client}
         clientId={1}
         clients={clients}
-        task={editingTaskId !== null ? tasks.find(t => t.id === editingTaskId) : undefined}
+        task={editingTaskId !== null ? (() => {
+          const task = tasks.find(t => t.id === editingTaskId);
+          return task ? {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            type: task.type,
+            dueDate: task.dueDate,
+            clientId: 1,
+          } : undefined;
+        })() : undefined}
         onSubmit={handleCreateOrUpdateTask}
       />
     </div>

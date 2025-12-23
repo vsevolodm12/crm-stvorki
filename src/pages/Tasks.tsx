@@ -5,6 +5,16 @@ import { Button } from '../components/Button';
 import { CreateTaskModal } from '../components/CreateTaskModal';
 import { Plus, Calendar, Bot, User, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  clientName: string;
+  dueDate: string;
+  type: 'bot' | 'manual';
+  status: 'pending' | 'completed';
+}
+
 export const Tasks = () => {
   const [filter, setFilter] = useState<'all' | 'bot' | 'manual'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'tomorrow' | 'week' | 'month' | 'calendar'>('today');
@@ -19,7 +29,7 @@ export const Tasks = () => {
   const dateDropdownRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
 
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
       title: 'Написать клиенту через 3 месяца',
@@ -740,7 +750,17 @@ export const Tasks = () => {
           setEditingTaskId(null);
         }}
         clients={clients}
-        task={editingTaskId !== null ? tasks.find(t => t.id === editingTaskId) : undefined}
+        task={editingTaskId !== null ? (() => {
+          const task = tasks.find(t => t.id === editingTaskId);
+          return task ? {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            type: task.type,
+            dueDate: task.dueDate,
+            clientId: clients.find(c => c.name === task.clientName)?.id || 0,
+          } : undefined;
+        })() : undefined}
         onSubmit={handleCreateOrUpdateTask}
       />
     </div>
