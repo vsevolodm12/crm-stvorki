@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
-import { Toggle } from '../components/Toggle';
 import { MessageInput } from '../components/MessageInput';
 import { CreateTaskModal } from '../components/CreateTaskModal';
-import { ArrowLeft, Phone, Plus, Bot, User, ExternalLink, Copy, Check, CheckSquare2, Calendar, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Phone, Plus, Bot, User, ExternalLink, Copy, Check, CheckSquare2, Calendar, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CreateAppealModal } from '../components/CreateAppealModal';
+import { CreateOrderModal } from '../components/CreateOrderModal';
 
 export const ClientDetail = () => {
   const { id } = useParams();
@@ -16,8 +16,11 @@ export const ClientDetail = () => {
   const [phoneCopied, setPhoneCopied] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'context' | 'tasks'>('context');
   const [completedTasks, setCompletedTasks] = useState<number[]>([3]); // Задача с id 3 уже выполнена
+  const [tasksCalendarMonth, setTasksCalendarMonth] = useState(new Date().getMonth());
+  const [tasksCalendarYear, setTasksCalendarYear] = useState(new Date().getFullYear());
 
   // Заглушка данных
   const client = {
@@ -123,6 +126,117 @@ export const ClientDetail = () => {
 
   const isTaskCompleted = (taskId: number) => completedTasks.includes(taskId);
 
+  // Функции для работы с датами и группировки задач
+  const parseDate = (dateStr: string): Date | null => {
+    // Формат: DD.MM.YYYY
+    const parts = dateStr.split('.');
+    if (parts.length !== 3) return null;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  };
+
+  const formatDateLabel = (dateStr: string): string => {
+    const date = parseDate(dateStr);
+    if (!date) return dateStr;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const taskDate = new Date(date);
+    taskDate.setHours(0, 0, 0, 0);
+
+    if (taskDate.getTime() === today.getTime()) {
+      return 'Сегодня';
+    } else if (taskDate.getTime() === yesterday.getTime()) {
+      return 'Вчера';
+    } else {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      return `${day}.${month}.${year}`;
+    }
+  };
+
+  const groupedTasks = useMemo(() => {
+    const groups: { [key: string]: typeof clientTasks } = {};
+    
+    clientTasks.forEach(task => {
+      const dateKey = task.dueDate;
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(task);
+    });
+
+    // Сортируем группы по дате (от ближайших к дальним)
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      const dateA = parseDate(a);
+      const dateB = parseDate(b);
+      if (!dateA || !dateB) return 0;
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    return sortedKeys.map(key => ({
+      date: key,
+      label: formatDateLabel(key),
+      tasks: groups[key],
+    }));
+  }, [clientTasks]);
+
+  // Функции для календаря задач
+  const months = [
+    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+  ];
+
+  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month: number, year: number) => {
+    const firstDay = new Date(year, month, 1).getDay();
+    return firstDay === 0 ? 6 : firstDay - 1;
+  };
+
+  const getTasksForDate = (day: number, month: number, year: number) => {
+    const dateStr = `${String(day).padStart(2, '0')}.${String(month + 1).padStart(2, '0')}.${year}`;
+    return clientTasks.filter(task => task.dueDate === dateStr);
+  };
+
+  const prevTasksMonth = () => {
+    if (tasksCalendarMonth === 0) {
+      setTasksCalendarMonth(11);
+      setTasksCalendarYear(tasksCalendarYear - 1);
+    } else {
+      setTasksCalendarMonth(tasksCalendarMonth - 1);
+    }
+  };
+
+  const nextTasksMonth = () => {
+    if (tasksCalendarMonth === 11) {
+      setTasksCalendarMonth(0);
+      setTasksCalendarYear(tasksCalendarYear + 1);
+    } else {
+      setTasksCalendarMonth(tasksCalendarMonth + 1);
+    }
+  };
+
+  const tasksDaysInMonth = getDaysInMonth(tasksCalendarMonth, tasksCalendarYear);
+  const tasksFirstDay = getFirstDayOfMonth(tasksCalendarMonth, tasksCalendarYear);
+  const tasksDays = [];
+  for (let i = 0; i < tasksFirstDay; i++) {
+    tasksDays.push(null);
+  }
+  for (let day = 1; day <= tasksDaysInMonth; day++) {
+    tasksDays.push(day);
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Заголовок */}
@@ -162,30 +276,32 @@ export const ClientDetail = () => {
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBotMode(!isBotMode)}
+              className={`w-12 h-12 p-0 flex-shrink-0 border-gray-300 ${
+                isBotMode ? 'bg-primary-600 hover:bg-primary-700' : 'bg-white hover:bg-gray-100'
+              }`}
+              title={isBotMode ? 'Сменить на оператора' : 'Сменить на бота'}
+            >
+              {isBotMode ? (
+                <Bot className="w-5 h-5 text-white" />
+              ) : (
+                <User className="w-5 h-5 text-black" />
+              )}
+            </Button>
             <div className="flex items-center gap-2 sm:gap-3">
               {isBotMode ? (
-                <>
-                  <Bot className="w-5 h-5 text-primary-600 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-gray-900">
-                    <span className="hidden sm:inline">Бот ведет переписку</span>
-                    <span className="sm:hidden">Бот</span>
-                  </span>
-                </>
+                <span className="text-sm sm:text-base font-medium text-gray-900">
+                  Бот ведет переписку
+                </span>
               ) : (
-                <>
-                  <User className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-gray-900">
-                    <span className="hidden sm:inline">Оператор ведет переписку</span>
-                    <span className="sm:hidden">Оператор</span>
-                  </span>
-                </>
+                <span className="text-sm sm:text-base font-medium text-gray-900">
+                  Оператор ведет переписку
+                </span>
               )}
             </div>
-            <Toggle
-              checked={isBotMode}
-              onChange={setIsBotMode}
-              label={isBotMode ? 'Бот' : 'Оператор'}
-            />
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <a
@@ -255,8 +371,17 @@ export const ClientDetail = () => {
               <span>Задачи</span>
             </button>
           </div>
-          <div className="flex items-center justify-end">
-            {activeTab === 'context' && <Badge variant="info" className="text-xs">Автоматически</Badge>}
+          <div className="flex items-center justify-end gap-2">
+            {activeTab === 'context' && (
+              <Button
+                size="sm"
+                onClick={() => setIsOrderModalOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Создать заказ
+              </Button>
+            )}
             {activeTab === 'tasks' && (
               <Button size="sm" onClick={() => setIsTaskModalOpen(true)} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
@@ -294,71 +419,78 @@ export const ClientDetail = () => {
             />
           </>
         ) : (
-          <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            {clientTasks.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                Нет задач для этого клиента
-              </div>
-            ) : (
-              clientTasks.map((task) => {
-                const completed = isTaskCompleted(task.id) || task.status === 'completed';
-                return (
-                  <div
-                    key={task.id}
-                    className={`p-4 border border-gray-200 rounded-lg ${
-                      completed ? 'opacity-70 bg-gray-50' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <button
-                            onClick={() => handleCompleteTask(task.id)}
-                            className="flex-shrink-0"
-                            title={completed ? 'Отменить выполнение' : 'Выполнить задачу'}
-                          >
-                            {completed ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
-                            ) : (
-                              <div className="w-5 h-5 border-2 border-gray-300 rounded-full hover:border-primary-500 transition-colors cursor-pointer"></div>
-                            )}
-                          </button>
-                          <h3 className={`font-semibold ${completed ? 'line-through text-gray-400' : 'text-gray-900'}`}>
-                            {task.title}
-                          </h3>
-                          {task.type === 'bot' ? (
-                            <Badge variant="info" className="flex items-center gap-1">
-                              <Bot className="w-3 h-3" />
-                              Бот
-                            </Badge>
-                          ) : (
-                            <Badge variant="default" className="flex items-center gap-1">
-                              <User className="w-3 h-3" />
-                              Ручная
-                            </Badge>
-                          )}
-                        </div>
-                        <p className={`text-sm mb-2 ${completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
-                          {task.description}
-                        </p>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Calendar className="w-4 h-4" />
-                          <span>{task.dueDate}</span>
-                        </div>
+          <div className="flex-1 overflow-y-auto mb-4 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              {groupedTasks.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Нет задач для этого клиента
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {groupedTasks.map((group) => (
+                    <div key={group.date}>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                        {group.label}:
+                      </h3>
+                      <div className="space-y-3">
+                        {group.tasks.map((task) => {
+                          const completed = isTaskCompleted(task.id) || task.status === 'completed';
+                          return (
+                            <div
+                              key={task.id}
+                              className={`p-4 border border-gray-200 rounded-lg ${
+                                completed ? 'opacity-70 bg-gray-50' : ''
+                              }`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <button
+                                      onClick={() => handleCompleteTask(task.id)}
+                                      className="flex-shrink-0"
+                                      title={completed ? 'Отменить выполнение' : 'Выполнить задачу'}
+                                    >
+                                      {completed ? (
+                                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                      ) : (
+                                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full hover:border-primary-500 transition-colors cursor-pointer"></div>
+                                      )}
+                                    </button>
+                                    <h3 className={`font-semibold ${completed ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+                                      {task.title}
+                                    </h3>
+                                    {task.type === 'bot' ? (
+                                      <Badge variant="info" className="flex items-center gap-1">
+                                        <Bot className="w-3 h-3" />
+                                        Бот
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="default" className="flex items-center gap-1">
+                                        <User className="w-3 h-3" />
+                                        Ручная
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className={`text-sm mb-2 ${completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                                    {task.description}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="ml-4"
+                                  onClick={() => handleCompleteTask(task.id)}
+                                >
+                                  {completed ? 'Отменить' : 'Выполнить'}
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="ml-4"
-                        onClick={() => handleCompleteTask(task.id)}
-                      >
-                        {completed ? 'Отменить' : 'Выполнить'}
-                      </Button>
                     </div>
-                  </div>
-                );
-              })
-            )}
+                  ))}
+                </div>
+              )}
           </div>
         )}
       </Card>
@@ -372,6 +504,15 @@ export const ClientDetail = () => {
         onSubmit={(task) => {
           console.log('Создана задача:', task);
           // Здесь будет логика создания задачи
+        }}
+      />
+
+      <CreateOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        onSubmit={(order) => {
+          console.log('Создан заказ:', order);
+          // Здесь будет логика создания заказа
         }}
       />
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -19,6 +19,7 @@ export const Clients = () => {
       name: 'Иван Петров',
       phone: '+7 (999) 123-45-67',
       lastContact: '5 мин назад',
+      createdDate: new Date(), // Сегодня
       tags: ['return-later', 'measurement'] as TagType[],
     },
     {
@@ -26,6 +27,7 @@ export const Clients = () => {
       name: 'Мария Сидорова',
       phone: '+7 (999) 234-56-78',
       lastContact: '15 мин назад',
+      createdDate: new Date(), // Сегодня
       tags: ['measurement'] as TagType[],
     },
     {
@@ -33,6 +35,11 @@ export const Clients = () => {
       name: 'Алексей Козлов',
       phone: '+7 (999) 345-67-89',
       lastContact: '1 час назад',
+      createdDate: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 1);
+        return date;
+      })(), // Вчера
       tags: ['refusal'] as TagType[],
     },
     {
@@ -40,6 +47,11 @@ export const Clients = () => {
       name: 'Елена Волкова',
       phone: '+7 (999) 456-78-90',
       lastContact: '2 дня назад',
+      createdDate: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 2);
+        return date;
+      })(), // 2 дня назад
       tags: ['non-target'] as TagType[],
     },
     {
@@ -47,9 +59,71 @@ export const Clients = () => {
       name: 'Дмитрий Соколов',
       phone: '+7 (999) 567-89-01',
       lastContact: '3 дня назад',
+      createdDate: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 3);
+        return date;
+      })(), // 3 дня назад
       tags: ['for-manager'] as TagType[],
     },
   ];
+
+  // Функции для группировки клиентов по датам
+  const formatDateLabel = (date: Date): string => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const clientDate = new Date(date);
+    clientDate.setHours(0, 0, 0, 0);
+
+    if (clientDate.getTime() === today.getTime()) {
+      return 'Сегодня';
+    } else if (clientDate.getTime() === yesterday.getTime()) {
+      return 'Вчера';
+    } else {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      return `${day}.${month}.${year}`;
+    }
+  };
+
+  const getDateKey = (date: Date): string => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().split('T')[0];
+  };
+
+  const groupedClients = useMemo(() => {
+    const filtered = clients.filter((client) => {
+      // Фильтрация по тегам
+      if (selectedFilterTags.length === 0) return true;
+      return selectedFilterTags.some((tag) => client.tags.includes(tag));
+    });
+
+    const groups: { [key: string]: typeof clients } = {};
+    
+    filtered.forEach(client => {
+      const dateKey = getDateKey(client.createdDate);
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(client);
+    });
+
+    // Сортируем группы по дате (от новых к старым)
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      return new Date(b).getTime() - new Date(a).getTime();
+    });
+
+    return sortedKeys.map(key => ({
+      date: new Date(key),
+      label: formatDateLabel(new Date(key)),
+      clients: groups[key],
+    }));
+  }, [clients, selectedFilterTags]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -116,50 +190,66 @@ export const Clients = () => {
         </Card>
       </div>
 
-      {/* Список клиентов */}
-      <div className="space-y-2">
-        {clients
-          .filter((client) => {
-            // Фильтрация по тегам
-            if (selectedFilterTags.length === 0) return true;
-            return selectedFilterTags.some((tag) => client.tags.includes(tag));
-          })
-          .map((client) => (
-          <Link key={client.id} to={`/clients/${client.id}`}>
-            <Card className="hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-primary-700 font-semibold text-sm">
-                      {client.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                      {client.name}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Phone className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm text-gray-600 truncate">{client.phone}</span>
-                    </div>
-                    {client.tags && client.tags.length > 0 && (
-                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        {client.tags.map((tag) => (
-                          <Tag key={tag} type={tag} />
-                        ))}
+      {/* Список клиентов с группировкой по датам */}
+      <div className="space-y-4">
+        {groupedClients.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            Клиенты не найдены
+          </div>
+        ) : (
+          groupedClients.map((group, groupIndex) => (
+          <div key={groupIndex}>
+            {/* Разделитель с датой */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 border-t border-gray-200"></div>
+              <span className="text-sm font-semibold text-gray-700 px-2">
+                {group.label}:
+              </span>
+              <div className="flex-1 border-t border-gray-200"></div>
+            </div>
+
+            {/* Клиенты в группе */}
+            <div className="space-y-2">
+              {group.clients.map((client) => (
+                <Link key={client.id} to={`/clients/${client.id}`}>
+                  <Card className="hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                          <span className="text-primary-700 font-semibold text-sm">
+                            {client.name.split(' ').map(n => n[0]).join('')}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                            {client.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Phone className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm text-gray-600 truncate">{client.phone}</span>
+                          </div>
+                          {client.tags && client.tags.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                              {client.tags.map((tag) => (
+                                <Tag key={tag} type={tag} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <span className="text-xs text-gray-500 block whitespace-nowrap">
-                    {client.lastContact}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          </Link>
-          ))}
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-xs text-gray-500 block whitespace-nowrap">
+                          {client.lastContact}
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+          ))
+        )}
       </div>
 
       <CreateAppealModal

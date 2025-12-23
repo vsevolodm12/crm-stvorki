@@ -194,14 +194,7 @@ export const DatePicker = ({ value, onChange, label, className = '' }: DatePicke
             </div>
 
             {/* Кнопки действий */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleClear}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Удалить
-              </button>
+            <div className="flex items-center justify-center mt-4 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleToday}

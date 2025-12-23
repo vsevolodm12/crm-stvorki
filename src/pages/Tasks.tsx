@@ -15,7 +15,7 @@ export const Tasks = () => {
       id: 1,
       title: 'Написать клиенту через 3 месяца',
       description: 'Уточнить, как прошла установка, есть ли вопросы',
-      appeal: 'Обращение #45 - Иван Петров',
+      clientName: 'Иван Петров',
       dueDate: '15.04.2025',
       type: 'bot',
       status: 'pending',
@@ -24,7 +24,7 @@ export const Tasks = () => {
       id: 2,
       title: 'Отправить коммерческое предложение',
       description: 'Подготовить КП с учетом замера',
-      appeal: 'Обращение #42 - Мария Сидорова',
+      clientName: 'Мария Сидорова',
       dueDate: '16.01.2025',
       type: 'manual',
       status: 'pending',
@@ -33,7 +33,7 @@ export const Tasks = () => {
       id: 3,
       title: 'Проверить замер',
       description: 'Связаться с замерщиком по обращению #40',
-      appeal: 'Обращение #40 - Алексей Козлов',
+      clientName: 'Алексей Козлов',
       dueDate: 'Сегодня, 18:00',
       type: 'manual',
       status: 'pending',
@@ -42,7 +42,7 @@ export const Tasks = () => {
       id: 4,
       title: 'Написать клиенту через неделю',
       description: 'Уточнить решение по предложению',
-      appeal: 'Обращение #38 - Елена Волкова',
+      clientName: 'Елена Волкова',
       dueDate: '22.01.2025',
       type: 'bot',
       status: 'pending',
@@ -51,7 +51,7 @@ export const Tasks = () => {
       id: 5,
       title: 'Отправить договор',
       description: 'Отправить подписанный договор клиенту',
-      appeal: 'Обращение #35 - Дмитрий Соколов',
+      clientName: 'Дмитрий Соколов',
       dueDate: '10.01.2025',
       type: 'manual',
       status: 'completed',
@@ -168,7 +168,7 @@ export const Tasks = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
                     <span className="text-primary-600 hover:underline cursor-pointer break-words">
-                      {task.appeal}
+                      {task.clientName}
                     </span>
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />

@@ -40,7 +40,6 @@ export const Dashboard = () => {
       id: 1,
       client: 'Иван Петров',
       phone: '+7 (999) 123-45-67',
-      lastMessage: 'Интересует установка окон',
       time: '5 мин назад',
       status: 'active',
       isBot: true,
@@ -49,7 +48,6 @@ export const Dashboard = () => {
       id: 2,
       client: 'Мария Сидорова',
       phone: '+7 (999) 234-56-78',
-      lastMessage: 'Уточнить стоимость',
       time: '15 мин назад',
       status: 'active',
       isBot: false,
@@ -58,36 +56,47 @@ export const Dashboard = () => {
       id: 3,
       client: 'Алексей Козлов',
       phone: '+7 (999) 345-67-89',
-      lastMessage: 'Назначить встречу',
-      time: '1 час назад',
+      time: 'Вчера',
       status: 'pending',
       isBot: true,
     },
   ];
 
-  const upcomingTasks = [
+  const allTasks = [
     {
       id: 1,
       title: 'Написать клиенту через 3 месяца',
-      appeal: 'Обращение #45',
+      clientName: 'Иван Петров',
       dueDate: '15.01.2025',
       type: 'bot',
     },
     {
       id: 2,
       title: 'Проверить замер',
-      appeal: 'Обращение #42',
+      clientName: 'Мария Сидорова',
       dueDate: 'Сегодня, 18:00',
       type: 'manual',
     },
     {
       id: 3,
       title: 'Отправить коммерческое предложение',
-      appeal: 'Обращение #40',
+      clientName: 'Алексей Козлов',
       dueDate: 'Завтра, 10:00',
       type: 'manual',
     },
+    {
+      id: 4,
+      title: 'Связаться с клиентом',
+      clientName: 'Елена Волкова',
+      dueDate: 'Сегодня, 14:00',
+      type: 'bot',
+    },
   ];
+
+  // Фильтруем только задачи на сегодня
+  const upcomingTasks = allTasks.filter(task => {
+    return task.dueDate.toLowerCase().includes('сегодня');
+  });
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -124,7 +133,7 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Последние обращения */}
         <Card>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Последние клиенты
             </h2>
@@ -149,7 +158,7 @@ export const Dashboard = () => {
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-0.5">
                       <p className="font-semibold text-gray-900 truncate">
                         {appeal.client}
                       </p>
@@ -163,11 +172,8 @@ export const Dashboard = () => {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">{appeal.phone}</p>
-                    <p className="text-sm text-gray-500 line-clamp-1">
-                      {appeal.lastMessage}
-                    </p>
-                    <div className="flex items-center gap-3 mt-2">
+                    <p className="text-sm text-gray-600 mb-0.5">{appeal.phone}</p>
+                    <div className="flex items-center gap-3 mt-1">
                       <span className="text-xs text-gray-400">{appeal.time}</span>
                     </div>
                   </div>
@@ -179,7 +185,7 @@ export const Dashboard = () => {
 
         {/* Ближайшие задачи */}
         <Card>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Ближайшие задачи
             </h2>
@@ -202,11 +208,11 @@ export const Dashboard = () => {
                     task.type === 'bot' ? 'bg-primary-500' : 'bg-gray-400'
                   }`} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 mb-1 line-clamp-1">
+                    <p className="font-semibold text-gray-900 mb-0.5 line-clamp-1">
                       {task.title}
                     </p>
-                    <p className="text-sm text-gray-600 mb-2">{task.appeal}</p>
-                    <div className="flex items-center gap-3">
+                    <p className="text-sm text-gray-600 mb-0.5">{task.clientName}</p>
+                    <div className="flex items-center gap-3 mt-1">
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-gray-400" />
                         <span className="text-xs text-gray-500">{task.dueDate}</span>
