@@ -424,37 +424,37 @@ export const ClientDetail = () => {
               href={client.conversationLinks.avito}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm text-gray-700 flex-1 sm:flex-initial justify-center"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <span className="w-5 h-5 rounded bg-orange-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-orange-600 font-bold text-xs">А</span>
+              <span className="w-5 h-5 rounded bg-orange-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs">А</span>
               </span>
               <span className="hidden sm:inline">Авито</span>
-              <ExternalLink className="w-3 h-3 text-gray-400" />
+              <ExternalLink className="w-3 h-3 text-gray-400 flex-shrink-0" />
             </a>
             <a
               href={client.conversationLinks.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm text-gray-700 flex-1 sm:flex-initial justify-center"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <span className="w-5 h-5 rounded bg-green-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 font-bold text-xs">W</span>
+              <span className="w-5 h-5 rounded bg-green-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs">W</span>
               </span>
               <span className="hidden sm:inline">WhatsApp</span>
-              <ExternalLink className="w-3 h-3 text-gray-400" />
+              <ExternalLink className="w-3 h-3 text-gray-400 flex-shrink-0" />
             </a>
             <a
               href={client.conversationLinks.max}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm text-gray-700 flex-1 sm:flex-initial justify-center"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <span className="w-5 h-5 rounded bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-bold text-xs">М</span>
+              <span className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs">М</span>
               </span>
               <span className="hidden sm:inline">МАХ</span>
-              <ExternalLink className="w-3 h-3 text-gray-400" />
+              <ExternalLink className="w-3 h-3 text-gray-400 flex-shrink-0" />
             </a>
           </div>
         </div>

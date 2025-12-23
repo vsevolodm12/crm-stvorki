@@ -26,7 +26,7 @@ export const Navigation = ({ isOpen, isCollapsed, onClose, onToggle, onCollapse 
     { path: '/clients', icon: Users, label: 'Клиенты' },
     { path: '/tasks', icon: CheckSquare, label: 'Задачи' },
     { path: '/statistics', icon: BarChart3, label: 'Статистика' },
-    { path: '/measurements', icon: Calendar, label: 'Календарь замеров' },
+    { path: '/measurements', icon: Calendar, label: 'Календарь' },
     { path: '/bot', icon: Bot, label: 'Настройки бота' },
   ];
 

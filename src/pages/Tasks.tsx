@@ -65,6 +65,24 @@ export const Tasks = () => {
       type: 'manual',
       status: 'completed',
     },
+    {
+      id: 6,
+      title: 'Подготовить спецификацию',
+      description: 'Подготовить детальную спецификацию для клиента',
+      clientName: 'Иван Петров',
+      dueDate: '15.12.2025',
+      type: 'manual',
+      status: 'pending',
+    },
+    {
+      id: 7,
+      title: 'Связаться по поводу установки',
+      description: 'Уточнить удобное время для установки окон',
+      clientName: 'Мария Сидорова',
+      dueDate: '20.12.2025',
+      type: 'bot',
+      status: 'pending',
+    },
   ]);
 
   const handleEditTask = (taskId: number) => {
@@ -144,12 +162,16 @@ export const Tasks = () => {
   };
 
   // Функции для работы с календарем
-  const parseTaskDate = (dueDate: string): { date: Date; isValid: boolean } | null => {
+  const parseTaskDate = (dueDate: string): { date: Date; isValid: boolean; year: number; month: number; day: number } | null => {
     const dateMatch = dueDate.match(/(\d{2})\.(\d{2})\.(\d{4})/);
     if (dateMatch) {
-      const [, day, month, year] = dateMatch;
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      return { date, isValid: true };
+      const [, dayStr, monthStr, yearStr] = dateMatch;
+      const day = parseInt(dayStr, 10);
+      const month = parseInt(monthStr, 10);
+      const year = parseInt(yearStr, 10);
+      // Создаем дату с 12:00 для избежания проблем с часовыми поясами
+      const date = new Date(year, month - 1, day, 12, 0, 0);
+      return { date, isValid: true, year, month: month - 1, day };
     }
     return null;
   };
@@ -160,8 +182,9 @@ export const Tasks = () => {
     tasks.forEach(task => {
       const parsed = parseTaskDate(task.dueDate);
       if (parsed && parsed.isValid) {
-        const month = parsed.date.getMonth();
-        const year = parsed.date.getFullYear();
+        // Используем год и месяц напрямую из распарсенных значений
+        const month = parsed.month;
+        const year = parsed.year;
         const key = `${year}-${month}`;
         
         if (!monthsMap[key]) {
@@ -183,12 +206,9 @@ export const Tasks = () => {
     tasks.forEach(task => {
       const parsed = parseTaskDate(task.dueDate);
       if (parsed && parsed.isValid) {
-        const taskMonth = parsed.date.getMonth();
-        const taskYear = parsed.date.getFullYear();
-        
-        if (taskMonth === month && taskYear === year) {
-          const day = parsed.date.getDate();
-          daysMap[day] = (daysMap[day] || 0) + 1;
+        // Сравниваем год и месяц напрямую из распарсенных значений
+        if (parsed.year === year && parsed.month === month) {
+          daysMap[parsed.day] = (daysMap[parsed.day] || 0) + 1;
         }
       }
     });
@@ -231,10 +251,16 @@ export const Tasks = () => {
     
     if (dateFilter === 'calendar') {
       if (!selectedDate) return true;
+      // Парсим выбранную дату из формата DD.MM.YYYY
+      const selectedDateMatch = selectedDate.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+      if (!selectedDateMatch) return false;
+      
+      const [, selectedDay, selectedMonth, selectedYear] = selectedDateMatch.map(Number);
+      
       const parsed = parseTaskDate(task.dueDate);
       if (parsed && parsed.isValid) {
-        const taskDateStr = `${String(parsed.date.getDate()).padStart(2, '0')}.${String(parsed.date.getMonth() + 1).padStart(2, '0')}.${parsed.date.getFullYear()}`;
-        return taskDateStr === selectedDate;
+        // Сравниваем год, месяц и день напрямую из распарсенных значений
+        return parsed.year === selectedYear && parsed.month === selectedMonth - 1 && parsed.day === selectedDay;
       }
       return false;
     }
@@ -268,17 +294,18 @@ export const Tasks = () => {
     }
 
     if (dateFilter === 'month') {
-      const monthFromNow = new Date(today);
-      monthFromNow.setMonth(monthFromNow.getMonth() + 1);
+      // Получаем первый и последний день текущего месяца
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1, 12, 0, 0);
+      const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0, 12, 0, 0);
       
-      const dateMatch = task.dueDate.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-      if (dateMatch) {
-        const [, day, month, year] = dateMatch;
-        const taskDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        taskDate.setHours(0, 0, 0, 0);
-        return taskDate >= today && taskDate <= monthFromNow;
+      const parsed = parseTaskDate(task.dueDate);
+      if (parsed && parsed.isValid) {
+        // Сравниваем год и месяц напрямую из распарсенных значений
+        return parsed.year === currentYear && parsed.month === currentMonth;
       }
-      return true; // Если не можем распарсить, показываем
+      return false; // Если не можем распарсить, не показываем
     }
 
     return true;

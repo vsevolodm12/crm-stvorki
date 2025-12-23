@@ -69,13 +69,36 @@ export const CreateTaskModal = ({
     }
   }, [isOpen, clientId]);
 
+  // Преобразование даты из DD.MM.YYYY в YYYY-MM-DD для DatePicker
+  const convertDateToDatePickerFormat = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const match = dateStr.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (match) {
+      const [, day, month, year] = match;
+      return `${year}-${month}-${day}`;
+    }
+    return dateStr; // Возвращаем как есть, если формат не распознан
+  };
+
+  // Преобразование даты из YYYY-MM-DD в DD.MM.YYYY для задачи
+  const convertDateFromDatePickerFormat = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const [, year, month, day] = match;
+      return `${day}.${month}.${year}`;
+    }
+    return dateStr; // Возвращаем как есть, если формат не распознан
+  };
+
   // Заполнение формы при редактировании
   useEffect(() => {
     if (isOpen && task) {
       setTitle(task.title);
       setDescription(task.description);
       setType(task.type);
-      setDueDate(task.dueDate);
+      // Преобразуем дату из формата DD.MM.YYYY в YYYY-MM-DD для DatePicker
+      setDueDate(convertDateToDatePickerFormat(task.dueDate));
       if (task.clientId) {
         setSelectedClientId(task.clientId);
       } else if (clientId) {
@@ -105,11 +128,13 @@ export const CreateTaskModal = ({
       alert('Пожалуйста, выберите клиента');
       return;
     }
+    // Преобразуем дату обратно в формат DD.MM.YYYY для задачи
+    const formattedDate = convertDateFromDatePickerFormat(dueDate);
     onSubmit({
       title,
       description,
       type,
-      dueDate,
+      dueDate: formattedDate,
       clientId: selectedClientId as number,
     });
     onClose();

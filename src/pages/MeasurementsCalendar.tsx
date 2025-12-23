@@ -1,115 +1,95 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { CreateMeasurementModal } from '../components/CreateMeasurementModal';
-import { AddMeasurerModal } from '../components/AddMeasurerModal';
-import { ManageMeasurersModal } from '../components/ManageMeasurersModal';
-import { MeasurerDropdown } from '../components/MeasurerDropdown';
-import { ViewMeasurementsModal } from '../components/ViewMeasurementsModal';
-import { ViewSingleMeasurementModal } from '../components/ViewSingleMeasurementModal';
-import { Plus, ChevronLeft, ChevronRight, UserPlus, Eye, Settings } from 'lucide-react';
+import { Badge } from '../components/Badge';
+import { CreateTaskModal } from '../components/CreateTaskModal';
+import { Plus, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
 
-interface Measurement {
+interface Task {
   id: number;
-  date: string;
-  time: string;
-  client: string;
-  phone: string;
-  measurer: string;
-  address: string;
-}
-
-interface Measurer {
-  id: number;
-  name: string;
-  phone: string;
+  title: string;
+  description: string;
+  clientName: string;
+  dueDate: string;
+  type: 'bot' | 'manual';
+  status: 'pending' | 'completed';
 }
 
 export const MeasurementsCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [selectedMeasurer, setSelectedMeasurer] = useState<number | 'all'>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [isAddMeasurerModalOpen, setIsAddMeasurerModalOpen] = useState(false);
-  const [isManageMeasurersModalOpen, setIsManageMeasurersModalOpen] = useState(false);
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [clickedPosition, setClickedPosition] = useState<{ x: number; y: number } | null>(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isViewTasksModalOpen, setIsViewTasksModalOpen] = useState(false);
   const [viewModalDate, setViewModalDate] = useState<string>('');
-  const [isSingleMeasurementModalOpen, setIsSingleMeasurementModalOpen] = useState(false);
-  const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
-  const [measurers, setMeasurers] = useState<Measurer[]>([
-    { id: 1, name: 'Иван Смирнов', phone: '+7 (999) 111-22-33' },
-    { id: 2, name: 'Петр Иванов', phone: '+7 (999) 222-33-44' },
-    { id: 3, name: 'Алексей Петров', phone: '+7 (999) 333-44-55' },
-  ]);
-
-  const [measurements, setMeasurements] = useState<Measurement[]>([
+  const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
-      date: '2025-01-15',
-      time: '10:00',
-      client: 'Иван Петров',
-      phone: '+7 (999) 123-45-67',
-      measurer: 'Иван Смирнов',
-      address: 'ул. Ленина, д. 10, кв. 5',
+      title: 'Написать клиенту через 3 месяца',
+      description: 'Уточнить, как прошла установка, есть ли вопросы',
+      clientName: 'Иван Петров',
+      dueDate: '15.04.2025',
+      type: 'bot',
+      status: 'pending',
     },
     {
       id: 2,
-      date: '2025-01-15',
-      time: '14:00',
-      client: 'Мария Сидорова',
-      phone: '+7 (999) 234-56-78',
-      measurer: 'Петр Иванов',
-      address: 'ул. Пушкина, д. 25, кв. 12',
+      title: 'Отправить коммерческое предложение',
+      description: 'Подготовить КП с учетом замера',
+      clientName: 'Мария Сидорова',
+      dueDate: '16.01.2025',
+      type: 'manual',
+      status: 'pending',
     },
     {
       id: 3,
-      date: '2025-01-16',
-      time: '11:00',
-      client: 'Алексей Козлов',
-      phone: '+7 (999) 345-67-89',
-      measurer: 'Иван Смирнов',
-      address: 'ул. Гагарина, д. 5, кв. 8',
+      title: 'Проверить замер',
+      description: 'Связаться с замерщиком по обращению #40',
+      clientName: 'Алексей Козлов',
+      dueDate: '10.01.2025',
+      type: 'manual',
+      status: 'pending',
     },
     {
       id: 4,
-      date: '2025-01-17',
-      time: '15:30',
-      client: 'Елена Волкова',
-      phone: '+7 (999) 456-78-90',
-      measurer: 'Алексей Петров',
-      address: 'ул. Мира, д. 15, кв. 3',
+      title: 'Написать клиенту через неделю',
+      description: 'Уточнить решение по предложению',
+      clientName: 'Елена Волкова',
+      dueDate: '22.01.2025',
+      type: 'bot',
+      status: 'pending',
     },
     {
       id: 5,
-      date: '2025-12-17',
-      time: '10:00',
-      client: 'Сергей Николаев',
-      phone: '+7 (999) 555-11-22',
-      measurer: 'Иван Смирнов',
-      address: 'ул. Советская, д. 20, кв. 7',
+      title: 'Отправить договор',
+      description: 'Отправить подписанный договор клиенту',
+      clientName: 'Дмитрий Соколов',
+      dueDate: '10.01.2025',
+      type: 'manual',
+      status: 'completed',
     },
     {
       id: 6,
-      date: '2025-12-17',
-      time: '14:30',
-      client: 'Ольга Семенова',
-      phone: '+7 (999) 666-33-44',
-      measurer: 'Петр Иванов',
-      address: 'пр. Победы, д. 45, кв. 12',
+      title: 'Подготовить спецификацию',
+      description: 'Подготовить детальную спецификацию для клиента',
+      clientName: 'Иван Петров',
+      dueDate: '15.12.2025',
+      type: 'manual',
+      status: 'pending',
     },
     {
       id: 7,
-      date: '2025-12-17',
-      time: '16:00',
-      client: 'Дмитрий Федоров',
-      phone: '+7 (999) 777-55-66',
-      measurer: 'Алексей Петров',
-      address: 'ул. Центральная, д. 8, кв. 3',
+      title: 'Связаться по поводу установки',
+      description: 'Уточнить удобное время для установки окон',
+      clientName: 'Мария Сидорова',
+      dueDate: '20.12.2025',
+      type: 'bot',
+      status: 'pending',
     },
   ]);
 
@@ -132,12 +112,43 @@ export const MeasurementsCalendar = () => {
     return firstDay === 0 ? 6 : firstDay - 1;
   };
 
-  const formatDate = (year: number, month: number, day: number) => {
+  // Форматирование даты в формат YYYY-MM-DD для сравнения
+  const formatDateToISO = (year: number, month: number, day: number) => {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   };
 
-  const getMeasurementsForDate = (date: string) => {
-    return measurements.filter(m => m.date === date);
+  // Форматирование даты задачи (DD.MM.YYYY) в Date объект
+  // Используем создание даты с 12:00 для избежания проблем с часовыми поясами
+  const parseTaskDate = (dueDate: string): { date: Date; isValid: boolean; year: number; month: number; day: number } | null => {
+    const dateMatch = dueDate.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (dateMatch) {
+      const [, dayStr, monthStr, yearStr] = dateMatch;
+      const day = parseInt(dayStr, 10);
+      const month = parseInt(monthStr, 10);
+      const year = parseInt(yearStr, 10);
+      // Создаем дату с 12:00 для избежания проблем с часовыми поясами
+      const date = new Date(year, month - 1, day, 12, 0, 0);
+      return { date, isValid: true, year, month: month - 1, day };
+    }
+    return null;
+  };
+
+  // Получить задачи для определенной даты (формат YYYY-MM-DD)
+  const getTasksForDate = (date: string) => {
+    const [targetYear, targetMonth, targetDay] = date.split('-').map(Number);
+    
+    return tasks.filter(task => {
+      if (!task.dueDate) return false;
+      
+      // Парсим дату задачи из формата DD.MM.YYYY
+      const dateMatch = task.dueDate.trim().match(/(\d{2})\.(\d{2})\.(\d{4})/);
+      if (!dateMatch) return false;
+      
+      const [, taskDay, taskMonth, taskYear] = dateMatch.map(Number);
+      
+      // Сравниваем числовые значения напрямую
+      return taskYear === targetYear && taskMonth === targetMonth && taskDay === targetDay;
+    });
   };
 
   const prevMonth = () => {
@@ -192,13 +203,11 @@ export const MeasurementsCalendar = () => {
   }, [clickedDate]);
 
   const handleDateClick = (day: number, event: React.MouseEvent) => {
-    const date = formatDate(currentYear, currentMonth, day);
-    const dayMeasurements = getMeasurementsForDate(date).filter(m =>
-      selectedMeasurer === 'all' || measurers.find(me => me.name === m.measurer)?.id === selectedMeasurer
-    );
+    const date = formatDateToISO(currentYear, currentMonth, day);
+    const dayTasks = getTasksForDate(date);
 
-    if (dayMeasurements.length > 0) {
-      // Если есть замеры - показываем кнопки
+    if (dayTasks.length > 0) {
+      // Если есть задачи - показываем кнопки
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       setClickedDate(date);
       setClickedPosition({
@@ -206,101 +215,107 @@ export const MeasurementsCalendar = () => {
         y: rect.top + rect.height / 2,
       });
     } else {
-      // Если замеров нет - открываем модальное окно создания
-      setSelectedDate(date);
+      // Если задач нет - открываем модальное окно создания
+      const formattedDate = `${String(day).padStart(2, '0')}.${String(currentMonth + 1).padStart(2, '0')}.${currentYear}`;
+      setSelectedDate(formattedDate);
       setIsCreateModalOpen(true);
+      setEditingTaskId(null);
     }
   };
 
-  const handleViewMeasurements = () => {
+  const handleViewTasks = () => {
     if (clickedDate) {
-      setViewModalDate(clickedDate);
-      setIsViewModalOpen(true);
+      const [year, month, day] = clickedDate.split('-').map(Number);
+      const formattedDate = `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
+      setViewModalDate(formattedDate);
+      setIsViewTasksModalOpen(true);
       setClickedDate(null);
       setClickedPosition(null);
     }
   };
 
-  const handleAddMeasurement = () => {
+  const handleAddTask = () => {
     if (clickedDate) {
-      setSelectedDate(clickedDate);
+      const [year, month, day] = clickedDate.split('-').map(Number);
+      const formattedDate = `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
+      setSelectedDate(formattedDate);
       setIsCreateModalOpen(true);
+      setEditingTaskId(null);
       setClickedDate(null);
       setClickedPosition(null);
     }
   };
 
-  const handleCreateMeasurement = (data: {
-    date: string;
-    time: string;
-    client: string;
-    phone: string;
-    measurerId: number;
-    address: string;
+  const handleCreateOrUpdateTask = (taskData: {
+    title: string;
+    description: string;
+    type: 'bot' | 'manual';
+    dueDate: string;
+    clientId: number;
   }) => {
-    const measurer = measurers.find(m => m.id === data.measurerId);
-    const newMeasurement: Measurement = {
-      id: Date.now(),
-      date: data.date,
-      time: data.time,
-      client: data.client,
-      phone: data.phone,
-      measurer: measurer?.name || '',
-      address: data.address,
-    };
-    setMeasurements([...measurements, newMeasurement]);
+    if (editingTaskId !== null) {
+      // Редактирование существующей задачи
+      setTasks(tasks.map(t => 
+        t.id === editingTaskId 
+          ? { ...t, ...taskData, clientName: 'Клиент' } 
+          : t
+      ));
+      setEditingTaskId(null);
+    } else {
+      // Создание новой задачи
+      const newTask: Task = {
+        id: Date.now(),
+        ...taskData,
+        clientName: 'Клиент',
+        status: 'pending',
+      };
+      setTasks([...tasks, newTask]);
+    }
+    setIsCreateModalOpen(false);
+    setSelectedDate('');
   };
 
-  const handleEditMeasurement = (id: number, updatedData: Partial<Measurement>) => {
-    setMeasurements(measurements.map(m => 
-      m.id === id ? { ...m, ...updatedData } : m
-    ));
-  };
+  // Получить ближайшие задачи
+  const getUpcomingTasks = () => {
+    const today = new Date();
+    // Создаем дату сегодня с 12:00 для корректного сравнения
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0);
+    const todayTime = todayDate.getTime();
 
-  const handleDeleteMeasurement = (id: number) => {
-    setMeasurements(measurements.filter(m => m.id !== id));
-  };
-
-  const handleAddMeasurer = (name: string, phone: string) => {
-    const newMeasurer: Measurer = {
-      id: Date.now(),
-      name: name,
-      phone: phone,
-    };
-    setMeasurers([...measurers, newMeasurer]);
-  };
-
-  const handleEditMeasurer = (id: number, name: string, phone: string) => {
-    setMeasurers(measurers.map(m => 
-      m.id === id ? { ...m, name, phone } : m
-    ));
-  };
-
-  const handleDeleteMeasurer = (id: number) => {
-    setMeasurers(measurers.filter(m => m.id !== id));
-    // Также удаляем замеры этого замерщика
-    setMeasurements(measurements.filter(m => {
-      const measurer = measurers.find(me => me.id === id);
-      return measurer ? m.measurer !== measurer.name : true;
-    }));
+    return tasks
+      .filter(task => {
+        const parsed = parseTaskDate(task.dueDate);
+        if (parsed && parsed.isValid) {
+          const taskTime = parsed.date.getTime();
+          return taskTime >= todayTime && task.status === 'pending';
+        }
+        return false;
+      })
+      .sort((a, b) => {
+        const parsedA = parseTaskDate(a.dueDate);
+        const parsedB = parseTaskDate(b.dueDate);
+        if (!parsedA || !parsedB) return 0;
+        return parsedA.date.getTime() - parsedB.date.getTime();
+      })
+      .slice(0, 5);
   };
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Календарь замеров</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">Управление замерами</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Календарь задач</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Управление задачами</p>
         </div>
         <Button onClick={() => {
           setSelectedDate('');
           setIsCreateModalOpen(true);
+          setEditingTaskId(null);
         }} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
-          Добавить замер
+          Добавить задачу
         </Button>
       </div>
-
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Календарь */}
@@ -324,13 +339,6 @@ export const MeasurementsCalendar = () => {
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
-              <div className="flex items-center gap-3 justify-center sm:justify-end">
-                <MeasurerDropdown
-                  measurers={measurers}
-                  selectedMeasurer={selectedMeasurer}
-                  onSelect={setSelectedMeasurer}
-                />
-              </div>
             </div>
 
             {/* Дни недели */}
@@ -352,10 +360,8 @@ export const MeasurementsCalendar = () => {
                   return <div key={`${currentYear}-${currentMonth}-empty-${index}`} className="aspect-square min-h-[44px]" />;
                 }
 
-                const date = formatDate(currentYear, currentMonth, day);
-                const dayMeasurements = getMeasurementsForDate(date).filter(m =>
-                  selectedMeasurer === 'all' || measurers.find(me => me.name === m.measurer)?.id === selectedMeasurer
-                );
+                const date = formatDateToISO(currentYear, currentMonth, day);
+                const dayTasks = getTasksForDate(date);
                 const today = new Date();
                 const isToday =
                   day === today.getDate() &&
@@ -382,20 +388,20 @@ export const MeasurementsCalendar = () => {
                       >
                         {day}
                       </span>
-                      {dayMeasurements.length > 0 && (
+                      {dayTasks.length > 0 && (
                         <span className="text-xs bg-primary-600 text-white rounded-full px-1.5">
-                          {dayMeasurements.length}
+                          {dayTasks.length}
                         </span>
                       )}
                     </div>
                     <div className="space-y-0.5">
-                      {dayMeasurements.slice(0, 2).map((m) => (
+                      {dayTasks.slice(0, 2).map((task) => (
                         <div
-                          key={m.id}
+                          key={task.id}
                           className="text-[10px] bg-primary-100 text-primary-700 rounded px-1 truncate"
-                          title={`${m.time} - ${m.client}`}
+                          title={task.title}
                         >
-                          {m.time}
+                          {task.title.length > 20 ? task.title.substring(0, 20) + '...' : task.title}
                         </div>
                       ))}
                     </div>
@@ -425,12 +431,12 @@ export const MeasurementsCalendar = () => {
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    handleViewMeasurements();
+                    handleViewTasks();
                   }}
                   className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
-                  Посмотреть замеры
+                  Посмотреть задачи
                 </button>
                 <button
                   type="button"
@@ -441,97 +447,57 @@ export const MeasurementsCalendar = () => {
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    handleAddMeasurement();
+                    handleAddTask();
                   }}
                   className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  Добавить замер
+                  Добавить задачу
                 </button>
               </div>
             )}
           </Card>
         </div>
 
-        {/* Управление замерщиками */}
+        {/* Ближайшие задачи */}
         <div>
           <Card>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Замерщики
-            </h2>
-            
-
-            {/* Добавить замерщика */}
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsAddMeasurerModalOpen(true)}
-                  className="flex-1"
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Добавить замерщика
-                </Button>
-                <button
-                  onClick={() => setIsManageMeasurersModalOpen(true)}
-                  className="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-                  title="Управление замерщиками"
-                >
-                  <Settings className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-            </div>
-          </Card>
-
-          {/* Ближайшие замеры */}
-          <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Ближайшие замеры
+              Ближайшие задачи
             </h2>
             <div className="space-y-2">
-              {measurements
-                .filter(m =>
-                  selectedMeasurer === 'all' || measurers.find(me => me.name === m.measurer)?.id === selectedMeasurer
-                )
-                .sort((a, b) => {
-                  const dateA = new Date(`${a.date}T${a.time}`);
-                  const dateB = new Date(`${b.date}T${b.time}`);
-                  return dateA.getTime() - dateB.getTime();
-                })
-                .slice(0, 5)
-                .map((measurement) => (
-                  <div
-                    key={measurement.id}
-                    onClick={() => {
-                      setSelectedMeasurement(measurement);
-                      setIsSingleMeasurementModalOpen(true);
-                    }}
-                    className="p-3 rounded-lg border border-gray-200 bg-white cursor-pointer hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-900 truncate">
-                          {measurement.client}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {new Date(measurement.date).toLocaleDateString('ru-RU', {
-                            day: '2-digit',
-                            month: '2-digit',
-                          })} в {measurement.time}
-                        </p>
-                      </div>
+              {getUpcomingTasks().map((task) => (
+                <div
+                  key={task.id}
+                  onClick={() => {
+                    setEditingTaskId(task.id);
+                    setIsCreateModalOpen(true);
+                  }}
+                  className="p-3 rounded-lg border border-gray-200 bg-white cursor-pointer hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-gray-900 truncate">
+                        {task.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {task.dueDate}
+                      </p>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-1">
-                      {measurement.address}
-                    </p>
+                    {task.type === 'bot' && (
+                      <Badge variant="info" className="text-xs ml-2 flex-shrink-0">
+                        Бот
+                      </Badge>
+                    )}
                   </div>
-                ))}
-              {measurements.filter(m =>
-                selectedMeasurer === 'all' || measurers.find(me => me.name === m.measurer)?.id === selectedMeasurer
-              ).length === 0 && (
+                  <p className="text-xs text-gray-600 mt-1 line-clamp-1">
+                    {task.description}
+                  </p>
+                </div>
+              ))}
+              {getUpcomingTasks().length === 0 && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  Нет запланированных замеров
+                  Нет запланированных задач
                 </p>
               )}
             </div>
@@ -539,58 +505,97 @@ export const MeasurementsCalendar = () => {
         </div>
       </div>
 
-      <CreateMeasurementModal
+      <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false);
           setSelectedDate('');
+          setEditingTaskId(null);
         }}
-        selectedDate={selectedDate}
-        measurers={measurers}
-        onSubmit={handleCreateMeasurement}
-      />
-
-      <AddMeasurerModal
-        isOpen={isAddMeasurerModalOpen}
-        onClose={() => setIsAddMeasurerModalOpen(false)}
-        onSubmit={handleAddMeasurer}
-      />
-
-      <ManageMeasurersModal
-        isOpen={isManageMeasurersModalOpen}
-        onClose={() => setIsManageMeasurersModalOpen(false)}
-        measurers={measurers}
-        onEdit={handleEditMeasurer}
-        onDelete={handleDeleteMeasurer}
-      />
-
-      <ViewMeasurementsModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        date={viewModalDate}
-        measurements={viewModalDate 
-          ? getMeasurementsForDate(viewModalDate).filter(m =>
-              selectedMeasurer === 'all' || measurers.find(me => me.name === m.measurer)?.id === selectedMeasurer
-            )
-          : []
+        clients={[]}
+        task={editingTaskId !== null 
+          ? tasks.find(t => t.id === editingTaskId) 
+          : selectedDate 
+            ? { title: '', description: '', type: 'manual', dueDate: selectedDate, clientId: 0 }
+            : undefined
         }
-        measurers={measurers}
-        onEdit={handleEditMeasurement}
-        onDelete={handleDeleteMeasurement}
+        onSubmit={handleCreateOrUpdateTask}
       />
 
-      <ViewSingleMeasurementModal
-        isOpen={isSingleMeasurementModalOpen}
-        onClose={() => {
-          setIsSingleMeasurementModalOpen(false);
-          setSelectedMeasurement(null);
-        }}
-        measurement={selectedMeasurement}
-        measurers={measurers}
-        onEdit={handleEditMeasurement}
-        onDelete={handleDeleteMeasurement}
-      />
+      {/* Модальное окно просмотра задач на дату */}
+      {isViewTasksModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Задачи на {viewModalDate}
+              </h2>
+              <button
+                onClick={() => setIsViewTasksModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6">
+              {(() => {
+                const dateMatch = viewModalDate.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+                if (!dateMatch) return null;
+                const [, day, month, year] = dateMatch;
+                // Форматируем дату в формат YYYY-MM-DD с ведущими нулями
+                const dateISO = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateTasks = getTasksForDate(dateISO);
+
+                if (dateTasks.length === 0) {
+                  return (
+                    <p className="text-gray-500 text-center py-8">
+                      На эту дату задач не запланировано
+                    </p>
+                  );
+                }
+
+                return (
+                  <div className="space-y-3">
+                    {dateTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        onClick={() => {
+                          setEditingTaskId(task.id);
+                          setIsCreateModalOpen(true);
+                          setIsViewTasksModalOpen(false);
+                        }}
+                        className="p-4 rounded-lg border border-gray-200 bg-white cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 mb-1">
+                              {task.title}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {task.description}
+                            </p>
+                          </div>
+                          {task.type === 'bot' && (
+                            <Badge variant="info" className="ml-2 flex-shrink-0">
+                              Бот
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs text-gray-500">
+                            Клиент: {task.clientName}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-

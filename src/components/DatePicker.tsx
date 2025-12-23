@@ -35,7 +35,30 @@ export const DatePicker = ({ value, onChange, label, className = '' }: DatePicke
     }
   }, [isOpen]);
 
-  const selectedDate = value ? new Date(value) : null;
+  // Парсим дату - может быть в формате YYYY-MM-DD или DD.MM.YYYY
+  const parseDateValue = (val: string): Date | null => {
+    if (!val) return null;
+    
+    // Проверяем формат DD.MM.YYYY
+    const ddmmyyyy = val.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (ddmmyyyy) {
+      const [, day, month, year] = ddmmyyyy;
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
+    }
+    
+    // Проверяем формат YYYY-MM-DD
+    const yyyymmdd = val.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (yyyymmdd) {
+      const [, year, month, day] = yyyymmdd;
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
+    }
+    
+    // Пробуем стандартный парсинг
+    const parsed = new Date(val);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const selectedDate = value ? parseDateValue(value) : null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -44,8 +67,11 @@ export const DatePicker = ({ value, onChange, label, className = '' }: DatePicke
   };
 
   const getFirstDayOfMonth = (month: number, year: number) => {
-    const firstDay = new Date(year, month, 1).getDay();
-    return firstDay === 0 ? 6 : firstDay - 1; // Понедельник = 0
+    // month от 0 до 11 (0 = январь, 11 = декабрь)
+    // Создаем дату в локальном времени для правильной работы с часовыми поясами
+    const firstDay = new Date(year, month, 1, 12, 0, 0).getDay();
+    // Преобразуем: Вс(0)->6, Пн(1)->0, Вт(2)->1, ..., Сб(6)->5
+    return firstDay === 0 ? 6 : firstDay - 1;
   };
 
   const formatDate = (date: Date | null) => {
@@ -106,6 +132,13 @@ export const DatePicker = ({ value, onChange, label, className = '' }: DatePicke
     days.push(day);
   }
 
+  // Добавляем пустые ячейки в конце, чтобы заполнить сетку до 42 ячеек (6 недель)
+  const totalCells = 42; // 7 дней * 6 недель
+  const remainingCells = Math.max(0, totalCells - days.length);
+  for (let i = 0; i < remainingCells; i++) {
+    days.push(null);
+  }
+
   return (
     <div className={`w-full ${className}`} ref={pickerRef}>
       {label && (
@@ -164,7 +197,7 @@ export const DatePicker = ({ value, onChange, label, className = '' }: DatePicke
             <div className="grid grid-cols-7 gap-1">
               {days.map((day, index) => {
                 if (day === null) {
-                  return <div key={index} className="aspect-square" />;
+                  return <div key={`empty-${index}`} className="aspect-square min-h-[32px]" />;
                 }
 
                 const cellDate = new Date(currentYear, currentMonth, day);
@@ -176,7 +209,7 @@ export const DatePicker = ({ value, onChange, label, className = '' }: DatePicke
 
                 return (
                   <button
-                    key={day}
+                    key={`${currentYear}-${currentMonth}-${day}`}
                     type="button"
                     onClick={() => handleDateSelect(day)}
                     className={`aspect-square flex items-center justify-center text-sm rounded-lg transition-colors ${
