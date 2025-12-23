@@ -125,7 +125,10 @@ export const MeasurementsCalendar = () => {
   };
 
   const getFirstDayOfMonth = (month: number, year: number) => {
-    const firstDay = new Date(year, month, 1).getDay();
+    // month от 0 до 11 (0 = январь, 11 = декабрь)
+    // Создаем дату в локальном времени для правильной работы с часовыми поясами
+    const firstDay = new Date(year, month, 1, 12, 0, 0).getDay();
+    // Преобразуем: Вс(0)->6, Пн(1)->0, Вт(2)->1, ..., Сб(6)->5
     return firstDay === 0 ? 6 : firstDay - 1;
   };
 
@@ -165,6 +168,13 @@ export const MeasurementsCalendar = () => {
 
   for (let day = 1; day <= daysInMonth; day++) {
     days.push(day);
+  }
+
+  // Добавляем пустые ячейки в конце, чтобы заполнить сетку до 42 ячеек (6 недель)
+  const totalCells = 42; // 7 дней * 6 недель
+  const remainingCells = Math.max(0, totalCells - days.length);
+  for (let i = 0; i < remainingCells; i++) {
+    days.push(null);
   }
 
   useEffect(() => {
@@ -339,7 +349,7 @@ export const MeasurementsCalendar = () => {
             <div className="grid grid-cols-7 gap-1 relative" ref={calendarRef}>
               {days.map((day, index) => {
                 if (day === null) {
-                  return <div key={index} className="aspect-square" />;
+                  return <div key={`${currentYear}-${currentMonth}-empty-${index}`} className="aspect-square min-h-[44px]" />;
                 }
 
                 const date = formatDate(currentYear, currentMonth, day);
@@ -355,7 +365,7 @@ export const MeasurementsCalendar = () => {
 
                 return (
                   <div
-                    key={day}
+                    key={`${currentYear}-${currentMonth}-${day}`}
                     className={`aspect-square border border-gray-200 rounded-lg p-1 cursor-pointer hover:bg-gray-50 transition-colors relative ${
                       isToday ? 'border-primary-500 bg-primary-50' : ''
                     } ${isClicked ? 'ring-2 ring-primary-500' : ''}`}

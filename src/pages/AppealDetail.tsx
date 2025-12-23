@@ -5,12 +5,13 @@ import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { Toggle } from '../components/Toggle';
 import { CreateTaskModal } from '../components/CreateTaskModal';
-import { ArrowLeft, Phone, Bot, User, Plus, Calendar, FileText, ExternalLink, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Phone, Bot, User, Plus, Calendar, FileText, ExternalLink, MessageCircle, Edit, Trash2 } from 'lucide-react';
 
 export const AppealDetail = () => {
   const { id } = useParams();
   const [isBotActive, setIsBotActive] = useState(true);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   // Заглушка данных
   const appeal = {
@@ -26,7 +27,7 @@ export const AppealDetail = () => {
     },
   };
 
-  const tasks = [
+  const [tasks, setTasks] = useState([
     {
       id: 1,
       title: 'Написать клиенту через 3 месяца',
@@ -43,7 +44,53 @@ export const AppealDetail = () => {
       type: 'manual',
       status: 'pending',
     },
+  ]);
+
+  const clients = [
+    { id: 1, name: 'Иван Петров', phone: '+7 (999) 123-45-67' },
+    { id: 2, name: 'Мария Сидорова', phone: '+7 (999) 234-56-78' },
+    { id: 3, name: 'Алексей Козлов', phone: '+7 (999) 345-67-89' },
+    { id: 4, name: 'Елена Волкова', phone: '+7 (999) 456-78-90' },
+    { id: 5, name: 'Дмитрий Соколов', phone: '+7 (999) 567-89-01' },
   ];
+
+  const handleEditTask = (taskId: number) => {
+    setEditingTaskId(taskId);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+      setTasks(tasks.filter(t => t.id !== taskId));
+    }
+  };
+
+  const handleCreateOrUpdateTask = (taskData: {
+    title: string;
+    description: string;
+    type: 'bot' | 'manual';
+    dueDate: string;
+    clientId: number;
+  }) => {
+    if (editingTaskId !== null) {
+      // Редактирование существующей задачи
+      setTasks(tasks.map(t => 
+        t.id === editingTaskId 
+          ? { ...t, ...taskData }
+          : t
+      ));
+      setEditingTaskId(null);
+    } else {
+      // Создание новой задачи
+      const newTask = {
+        id: Math.max(...tasks.map(t => t.id), 0) + 1,
+        ...taskData,
+        status: 'pending' as const,
+      };
+      setTasks([...tasks, newTask]);
+    }
+    setIsTaskModalOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -188,14 +235,30 @@ export const AppealDetail = () => {
                   className="p-3 rounded-lg border border-gray-100"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium text-sm text-gray-900">
+                    <p className="font-medium text-sm text-gray-900 flex-1">
                       {task.title}
                     </p>
-                    {task.type === 'bot' && (
-                      <Badge variant="info" className="text-xs">
-                        Бот
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2 ml-2">
+                      {task.type === 'bot' && (
+                        <Badge variant="info" className="text-xs">
+                          Бот
+                        </Badge>
+                      )}
+                      <button
+                        onClick={() => handleEditTask(task.id)}
+                        className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                        title="Редактировать задачу"
+                      >
+                        <Edit className="w-3.5 h-3.5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTask(task.id)}
+                        className="p-1.5 hover:bg-red-50 rounded transition-colors"
+                        title="Удалить задачу"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                      </button>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-600 mb-2">{task.description}</p>
                   <div className="flex items-center gap-2">
@@ -242,14 +305,17 @@ export const AppealDetail = () => {
 
       <CreateTaskModal
         isOpen={isTaskModalOpen}
-        onClose={() => setIsTaskModalOpen(false)}
+        onClose={() => {
+          setIsTaskModalOpen(false);
+          setEditingTaskId(null);
+        }}
         appealId={Number(id)}
         appealTitle={`Обращение #${id}`}
         clientName={appeal.client}
-        onSubmit={(task) => {
-          console.log('Создана задача:', task);
-          // Здесь будет логика создания задачи
-        }}
+        clientId={1}
+        clients={clients}
+        task={editingTaskId !== null ? tasks.find(t => t.id === editingTaskId) : undefined}
+        onSubmit={handleCreateOrUpdateTask}
       />
     </div>
   );

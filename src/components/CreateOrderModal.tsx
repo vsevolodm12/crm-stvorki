@@ -8,9 +8,10 @@ interface CreateOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (order: { amount: number; cost: number; payDate: string }) => void;
+  order?: { amount: number; cost: number; payDate: string };
 }
 
-export const CreateOrderModal = ({ isOpen, onClose, onSubmit }: CreateOrderModalProps) => {
+export const CreateOrderModal = ({ isOpen, onClose, onSubmit, order }: CreateOrderModalProps) => {
   const [amount, setAmount] = useState('');
   const [cost, setCost] = useState('');
   const [payDate, setPayDate] = useState('');
@@ -39,15 +40,25 @@ export const CreateOrderModal = ({ isOpen, onClose, onSubmit }: CreateOrderModal
 
   useEffect(() => {
     if (isOpen) {
-      const today = new Date();
-      const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      setPayDate(formatted);
+      if (order) {
+        // Режим редактирования
+        setAmount(formatNumberInput(order.amount.toString()));
+        setCost(formatNumberInput(order.cost.toString()));
+        setPayDate(order.payDate);
+      } else {
+        // Режим создания
+        const today = new Date();
+        const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        setPayDate(formatted);
+        setAmount('');
+        setCost('');
+      }
     } else {
       setAmount('');
       setCost('');
       setPayDate('');
     }
-  }, [isOpen]);
+  }, [isOpen, order]);
 
   const margin = useMemo(() => {
     const parsedAmount = parseNumber(amount);
@@ -82,7 +93,9 @@ export const CreateOrderModal = ({ isOpen, onClose, onSubmit }: CreateOrderModal
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-visible border border-gray-100">
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Создать заказ</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {order ? 'Редактировать заказ' : 'Создать заказ'}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -152,7 +165,7 @@ export const CreateOrderModal = ({ isOpen, onClose, onSubmit }: CreateOrderModal
               className="w-full sm:w-auto"
               disabled={!amount || !cost || !payDate}
             >
-              Создать заказ
+              {order ? 'Сохранить изменения' : 'Создать заказ'}
             </Button>
           </div>
         </form>

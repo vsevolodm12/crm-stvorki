@@ -3,7 +3,7 @@ import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { CreateTaskModal } from '../components/CreateTaskModal';
-import { Plus, Calendar, Bot, User, CheckCircle2, ChevronDown, ChevronLeft } from 'lucide-react';
+import { Plus, Calendar, Bot, User, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 
 export const Tasks = () => {
   const [filter, setFilter] = useState<'all' | 'bot' | 'manual'>('all');
@@ -15,10 +15,11 @@ export const Tasks = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const dateDropdownRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
 
-  const tasks = [
+  const [tasks, setTasks] = useState([
     {
       id: 1,
       title: 'Написать клиенту через 3 месяца',
@@ -64,7 +65,46 @@ export const Tasks = () => {
       type: 'manual',
       status: 'completed',
     },
-  ];
+  ]);
+
+  const handleEditTask = (taskId: number) => {
+    setEditingTaskId(taskId);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+      setTasks(tasks.filter(t => t.id !== taskId));
+    }
+  };
+
+  const handleCreateOrUpdateTask = (taskData: {
+    title: string;
+    description: string;
+    type: 'bot' | 'manual';
+    dueDate: string;
+    clientId: number;
+  }) => {
+    if (editingTaskId !== null) {
+      // Редактирование существующей задачи
+      setTasks(tasks.map(t => 
+        t.id === editingTaskId 
+          ? { ...t, ...taskData, clientName: clients.find(c => c.id === taskData.clientId)?.name || '' }
+          : t
+      ));
+      setEditingTaskId(null);
+    } else {
+      // Создание новой задачи
+      const newTask = {
+        id: Math.max(...tasks.map(t => t.id), 0) + 1,
+        ...taskData,
+        clientName: clients.find(c => c.id === taskData.clientId)?.name || '',
+        status: 'pending' as const,
+      };
+      setTasks([...tasks, newTask]);
+    }
+    setIsTaskModalOpen(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -161,8 +201,29 @@ export const Tasks = () => {
   };
 
   const getFirstDayOfMonth = (month: number, year: number) => {
-    const firstDay = new Date(year, month, 1).getDay();
+    // month от 0 до 11 (0 = январь, 11 = декабрь)
+    // Создаем дату в локальном времени для правильной работы с часовыми поясами
+    const firstDay = new Date(year, month, 1, 12, 0, 0).getDay();
+    // Преобразуем: Вс(0)->6, Пн(1)->0, Вт(2)->1, ..., Сб(6)->5
     return firstDay === 0 ? 6 : firstDay - 1;
+  };
+
+  const prevCalendarMonth = () => {
+    if (!selectedMonth) return;
+    if (selectedMonth.month === 0) {
+      setSelectedMonth({ month: 11, year: selectedMonth.year - 1 });
+    } else {
+      setSelectedMonth({ month: selectedMonth.month - 1, year: selectedMonth.year });
+    }
+  };
+
+  const nextCalendarMonth = () => {
+    if (!selectedMonth) return;
+    if (selectedMonth.month === 11) {
+      setSelectedMonth({ month: 0, year: selectedMonth.year + 1 });
+    } else {
+      setSelectedMonth({ month: selectedMonth.month + 1, year: selectedMonth.year });
+    }
   };
 
   const matchesDateFilter = (task: typeof tasks[0]): boolean => {
@@ -244,6 +305,14 @@ export const Tasks = () => {
   };
 
   const isTaskCompleted = (taskId: number) => completedTasks.includes(taskId) || tasks.find(t => t.id === taskId)?.status === 'completed';
+
+  const clients = [
+    { id: 1, name: 'Иван Петров', phone: '+7 (999) 123-45-67' },
+    { id: 2, name: 'Мария Сидорова', phone: '+7 (999) 234-56-78' },
+    { id: 3, name: 'Алексей Козлов', phone: '+7 (999) 345-67-89' },
+    { id: 4, name: 'Елена Волкова', phone: '+7 (999) 456-78-90' },
+    { id: 5, name: 'Дмитрий Соколов', phone: '+7 (999) 567-89-01' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -364,11 +433,9 @@ export const Tasks = () => {
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-4">
                         <button
-                          onClick={() => {
-                            setCalendarView('months');
-                            setSelectedMonth(null);
-                          }}
+                          onClick={prevCalendarMonth}
                           className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          title="Предыдущий месяц"
                         >
                           <ChevronLeft className="w-4 h-4 text-gray-600" />
                         </button>
@@ -382,10 +449,11 @@ export const Tasks = () => {
                           })()}
                         </h3>
                         <button
-                          onClick={() => setIsCalendarOpen(false)}
+                          onClick={nextCalendarMonth}
                           className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          title="Следующий месяц"
                         >
-                          <ChevronDown className="w-4 h-4 text-gray-600 rotate-180" />
+                          <ChevronRight className="w-4 h-4 text-gray-600" />
                         </button>
                       </div>
                       
@@ -405,17 +473,26 @@ export const Tasks = () => {
                             const tasksByDays = getTasksByDaysInMonth(selectedMonth.month, selectedMonth.year);
                             const days = [];
                             
+                            // Добавляем пустые ячейки в начале
                             for (let i = 0; i < firstDay; i++) {
                               days.push(null);
                             }
                             
+                            // Добавляем дни месяца
                             for (let day = 1; day <= daysInMonth; day++) {
                               days.push(day);
                             }
                             
+                            // Добавляем пустые ячейки в конце, чтобы заполнить сетку до 42 ячеек (6 недель)
+                            const totalCells = 42; // 7 дней * 6 недель
+                            const remainingCells = Math.max(0, totalCells - days.length);
+                            for (let i = 0; i < remainingCells; i++) {
+                              days.push(null);
+                            }
+                            
                             return days.map((day, index) => {
                               if (day === null) {
-                                return <div key={index} className="aspect-square" />;
+                                return <div key={`${selectedMonth.year}-${selectedMonth.month}-empty-${index}`} className="aspect-square min-h-[44px]" />;
                               }
                               
                               const taskCount = tasksByDays[day] || 0;
@@ -424,7 +501,7 @@ export const Tasks = () => {
                               
                               return (
                                 <button
-                                  key={day}
+                                  key={`${selectedMonth.year}-${selectedMonth.month}-${day}`}
                                   onClick={() => {
                                     setSelectedDate(dateStr);
                                     setDateFilter('calendar');
@@ -599,14 +676,30 @@ export const Tasks = () => {
                     </div>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto sm:ml-4"
-                  onClick={() => handleCompleteTask(task.id)}
-                >
-                  {completed ? 'Отменить' : 'Выполнить'}
-                </Button>
+                <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-4">
+                  <button
+                    onClick={() => handleEditTask(task.id)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                    title="Редактировать задачу"
+                  >
+                    <Edit className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    title="Удалить задачу"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 sm:flex-initial"
+                    onClick={() => handleCompleteTask(task.id)}
+                  >
+                    {completed ? 'Отменить' : 'Выполнить'}
+                  </Button>
+                </div>
               </div>
             </Card>
           );
@@ -615,18 +708,13 @@ export const Tasks = () => {
 
       <CreateTaskModal
         isOpen={isTaskModalOpen}
-        onClose={() => setIsTaskModalOpen(false)}
-        clients={[
-          { id: 1, name: 'Иван Петров', phone: '+7 (999) 123-45-67' },
-          { id: 2, name: 'Мария Сидорова', phone: '+7 (999) 234-56-78' },
-          { id: 3, name: 'Алексей Козлов', phone: '+7 (999) 345-67-89' },
-          { id: 4, name: 'Елена Волкова', phone: '+7 (999) 456-78-90' },
-          { id: 5, name: 'Дмитрий Соколов', phone: '+7 (999) 567-89-01' },
-        ]}
-        onSubmit={(task) => {
-          console.log('Создана задача:', task);
-          // Здесь будет логика создания задачи
+        onClose={() => {
+          setIsTaskModalOpen(false);
+          setEditingTaskId(null);
         }}
+        clients={clients}
+        task={editingTaskId !== null ? tasks.find(t => t.id === editingTaskId) : undefined}
+        onSubmit={handleCreateOrUpdateTask}
       />
     </div>
   );

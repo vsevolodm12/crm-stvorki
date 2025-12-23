@@ -19,6 +19,15 @@ interface CreateTaskModalProps {
   clientName?: string;
   clientId?: number;
   clients?: Client[];
+  task?: {
+    id?: number;
+    title: string;
+    description: string;
+    type: 'bot' | 'manual';
+    dueDate: string;
+    clientId?: number;
+    clientName?: string;
+  };
   onSubmit: (task: {
     title: string;
     description: string;
@@ -36,6 +45,7 @@ export const CreateTaskModal = ({
   clientName,
   clientId,
   clients = [],
+  task,
   onSubmit,
 }: CreateTaskModalProps) => {
   // Параметры appealId, appealTitle, clientName оставлены для совместимости API
@@ -58,6 +68,21 @@ export const CreateTaskModal = ({
       setSelectedClientId('');
     }
   }, [isOpen, clientId]);
+
+  // Заполнение формы при редактировании
+  useEffect(() => {
+    if (isOpen && task) {
+      setTitle(task.title);
+      setDescription(task.description);
+      setType(task.type);
+      setDueDate(task.dueDate);
+      if (task.clientId) {
+        setSelectedClientId(task.clientId);
+      } else if (clientId) {
+        setSelectedClientId(clientId);
+      }
+    }
+  }, [isOpen, task, clientId]);
 
   // Сброс формы при закрытии
   useEffect(() => {
@@ -106,7 +131,9 @@ export const CreateTaskModal = ({
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Создать задачу</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+            {task ? 'Редактировать задачу' : 'Создать задачу'}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -260,7 +287,7 @@ export const CreateTaskModal = ({
               Отмена
             </Button>
             <Button type="submit" className="flex-1">
-              Создать задачу
+              {task ? 'Сохранить изменения' : 'Создать задачу'}
             </Button>
           </div>
         </form>

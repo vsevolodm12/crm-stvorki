@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
+import { Badge } from '../components/Badge';
 import { TagDropdown } from '../components/TagDropdown';
 import { Tag } from '../components/Tag';
 import type { TagType } from '../components/Tag';
@@ -21,6 +22,7 @@ export const Clients = () => {
       lastContact: '5 мин назад',
       createdDate: new Date(), // Сегодня
       tags: ['return-later', 'measurement'] as TagType[],
+      isBotMode: true,
     },
     {
       id: 2,
@@ -29,18 +31,20 @@ export const Clients = () => {
       lastContact: '15 мин назад',
       createdDate: new Date(), // Сегодня
       tags: ['measurement'] as TagType[],
+      isBotMode: false,
     },
     {
       id: 3,
       name: 'Алексей Козлов',
       phone: '+7 (999) 345-67-89',
-      lastContact: '1 час назад',
+      lastContact: 'Вчера',
       createdDate: (() => {
         const date = new Date();
         date.setDate(date.getDate() - 1);
         return date;
       })(), // Вчера
       tags: ['refusal'] as TagType[],
+      isBotMode: true,
     },
     {
       id: 4,
@@ -53,6 +57,7 @@ export const Clients = () => {
         return date;
       })(), // 2 дня назад
       tags: ['non-target'] as TagType[],
+      isBotMode: false,
     },
     {
       id: 5,
@@ -65,6 +70,7 @@ export const Clients = () => {
         return date;
       })(), // 3 дня назад
       tags: ['for-manager'] as TagType[],
+      isBotMode: true,
     },
   ];
 
@@ -221,9 +227,20 @@ export const Clients = () => {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                            {client.name}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                              {client.name}
+                            </h3>
+                            {client.isBotMode ? (
+                              <Badge variant="info" className="text-xs flex-shrink-0">
+                                Бот
+                              </Badge>
+                            ) : (
+                              <Badge variant="default" className="text-xs flex-shrink-0">
+                                Оператор
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             <Phone className="w-3 h-3 text-gray-400 flex-shrink-0" />
                             <span className="text-xs sm:text-sm text-gray-600 truncate">{client.phone}</span>
